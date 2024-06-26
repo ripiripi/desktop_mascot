@@ -1,21 +1,12 @@
 from .base_window import WindowBase
 import tkinter as tk
+from .interface import Subject, Observer
 
 
-class BubbleWindow(WindowBase):
+class BubbleWindow(WindowBase, Subject, Observer):
     def __init__(self, root):
         super().__init__(root, "吹き出しウィンドウ", 300, 100)
         self.update_sns_posts()
-
-    def setup_window(self):
-        self.window.bind("<Button-1>", self.on_click)
-
-    def on_click(self, event):
-        print("吹き出しウィンドウがクリックされました")
-        # 必要に応じて他の動作を追加
-
-    def on_configure(self, event):
-        pass  # 必要に応じて実装
 
     def update_sns_posts(self):
         self.window.lift()
@@ -29,3 +20,12 @@ class BubbleWindow(WindowBase):
             widget.destroy()
         label = tk.Label(self.window, text="設定変更オプション")
         label.pack()
+
+    def add_observer(self, observer):
+        return super().add_observer(observer)
+
+    def notify_observers(self, event):
+        return super().notify_observers(event)
+
+    def update(self, event):
+        return super().update(event)

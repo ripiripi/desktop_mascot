@@ -1,13 +1,15 @@
 from .base_window import WindowBase
 import tkinter as tk
 from tkinter import font
+from .interface import Subject, Observer
 
 
-class MemoWindow(WindowBase):
+class MemoWindow(WindowBase, Subject, Observer):
     def __init__(self, root):
-        super().__init__(root, "メモウィンドウ", 300, 400)
+        super().__init__(root, "メモウィンドウ", 300, 400, syncronized_windows=[])
 
     def setup_window(self):
+
         self.text_widget = tk.Text(self.window)
         self.text_widget.pack(expand=True, fill=tk.BOTH)
 
@@ -16,11 +18,7 @@ class MemoWindow(WindowBase):
         self.text_widget.tag_configure("bold", font=bold_font)
 
         self.text_widget.bind("<KeyRelease>", self.decorate_text)
-        self.window.bind("<Button-1>", self.on_click)
-
-    def on_click(self, event):
-        print("メモウィンドウがクリックされました")
-        # 必要に応じて他の動作を追加
+        super().setup_window()
 
     def on_configure(self, event):
         pass  # 必要に応じて実装
@@ -38,3 +36,12 @@ class MemoWindow(WindowBase):
                 break
             self.text_widget.tag_add("bold", start, end + "+2c")
             start = end + "+2c"
+
+    def add_observer(self, observer):
+        return super().add_observer(observer)
+
+    def notify_observers(self, event):
+        return super().notify_observers(event)
+
+    def update(self, event):
+        return super().update(event)

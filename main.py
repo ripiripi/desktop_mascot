@@ -9,12 +9,8 @@ class DesktopMascotApp:
         self.root = root
         self.memo_window = MemoWindow(root)
         self.bubble_window = BubbleWindow(root)
-        self.char_window = CharacterWindow(root, self.memo_window)
-        self.link_windows()
-
-    def link_windows(self):
-        # キャラウィンドウとメモウィンドウの位置連動はCharacterWindowクラスで行います
-        pass
+        self.char_window = CharacterWindow(root, self.memo_window, self.bubble_window)
+        self.memo_window.add_syncronized_window(self.char_window)
 
 
 if __name__ == "__main__":

@@ -1,20 +1,19 @@
 from .base_window import WindowBase
+from .interface import Subject, Observer
 
 
-class CharacterWindow(WindowBase):
-    def __init__(self, root, memo_window):
-        super().__init__(root, "キャラウィンドウ", 200, 200)
-        self.memo_window = memo_window
+class CharacterWindow(WindowBase, Subject, Observer):
+    def __init__(self, root, memo_window, bubble_window):
+        super().__init__(root, "キャラウィンドウ", 200, 200, syncronized_windows=[memo_window, bubble_window])
 
     def setup_window(self):
-        self.window.bind("<Button-1>", self.on_click)
-        self.window.bind("<Configure>", self.on_configure)
+        super().setup_window()
 
-    def on_click(self, event):
-        print("キャラウィンドウがクリックされました")
-        # 必要に応じて他の動作を追加
+    def add_observer(self, observer):
+        return super().add_observer(observer)
 
-    def on_configure(self, event):
-        x = self.window.winfo_x() + 220  # キャラウィンドウの右にメモウィンドウを配置
-        y = self.window.winfo_y()
-        self.memo_window.window.geometry(f"+{x}+{y}")
+    def notify_observers(self, event):
+        return super().notify_observers(event)
+
+    def update(self, event):
+        return super().update(event)
