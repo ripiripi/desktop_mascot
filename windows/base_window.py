@@ -8,6 +8,7 @@ class WindowBase(ABC):
         self.window.geometry(f"{width}x{height}+{x_pos}+{y_pos}")
         self.window.title(title)
         self.window.wm_attributes("-topmost", topmost_flag)
+        self.window.overrideredirect(True)
         self.observers = []
 
         # 位置移動を同期させるウィンドウ
