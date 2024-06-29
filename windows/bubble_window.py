@@ -1,11 +1,10 @@
 from .base_window import WindowBase
 import tkinter as tk
-from .interface import Subject, Observer
 
 
-class BubbleWindow(WindowBase, Subject, Observer):
-    def __init__(self, root):
-        super().__init__(root, "吹き出しウィンドウ", 300, 100)
+class BubbleWindow(WindowBase):
+    def __init__(self, root, x_pos, y_pos):
+        super().__init__(root, "吹き出しウィンドウ", 300, 100, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
         self.update_sns_posts()
 
     def update_sns_posts(self):
@@ -21,11 +20,5 @@ class BubbleWindow(WindowBase, Subject, Observer):
         label = tk.Label(self.window, text="設定変更オプション")
         label.pack()
 
-    def add_observer(self, observer):
-        return super().add_observer(observer)
-
-    def notify_observers(self, event):
-        return super().notify_observers(event)
-
     def update(self, event):
-        return super().update(event)
+        pass

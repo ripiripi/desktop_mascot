@@ -1,19 +1,21 @@
 from .base_window import WindowBase
-from .interface import Subject, Observer
+from .enum import Event
 
 
-class CharacterWindow(WindowBase, Subject, Observer):
-    def __init__(self, root, memo_window, bubble_window):
-        super().__init__(root, "キャラウィンドウ", 200, 200, syncronized_windows=[memo_window, bubble_window])
-
-    def setup_window(self):
-        super().setup_window()
-
-    def add_observer(self, observer):
-        return super().add_observer(observer)
-
-    def notify_observers(self, event):
-        return super().notify_observers(event)
+class CharacterWindow(WindowBase):
+    def __init__(self, root, memo_window, bubble_window, x_pos, y_pos):
+        super().__init__(
+            root,
+            "キャラウィンドウ",
+            200,
+            200,
+            x_pos,
+            y_pos,
+            syncronized_windows=[memo_window, bubble_window],
+            topmost_flag=True,
+        )
+        self.window.lift(memo_window.window)
 
     def update(self, event):
-        return super().update(event)
+        if event == Event.set_charwindow_topmost:
+            self.window.lift(self.syncronized_windows[0].window)  # memo window

@@ -3,13 +3,15 @@ import tkinter as tk
 
 
 class WindowBase(ABC):
-    def __init__(self, root, title, width, height, syncronized_windows=[]):
+    def __init__(self, root, title, width, height, x_pos=0, y_pos=0, syncronized_windows=[], topmost_flag=False):
         self.window = tk.Toplevel(root)
-        self.window.geometry(f"{width}x{height}")
+        self.window.geometry(f"{width}x{height}+{x_pos}+{y_pos}")
         self.window.title(title)
+        self.window.wm_attributes("-topmost", topmost_flag)
+        self.observers = []
 
         # 位置移動を同期させるウィンドウ
-        self.pos_syncronized_windows: list[WindowBase] = syncronized_windows
+        self.syncronized_windows: list[WindowBase] = syncronized_windows
         print(syncronized_windows)
 
         self.origin = (0, 0)
@@ -19,24 +21,43 @@ class WindowBase(ABC):
 
         self.setup_window()
 
+    def add_observer(self, observer):
+        self.observers.append(observer)
+
+    def notify_observers(self, event):
+        for observer in self.observers:
+            observer.update(event)
+
+    @abstractmethod
+    def update(self, event):
+        raise NotImplementedError("Subclass must implement 'update' method")
+
     def add_syncronized_window(self, window):
-        self.pos_syncronized_windows.append(window)
+        self.syncronized_windows.append(window)
 
     def setup_window(self):
-        self.window.bind("<Button-1>", self.mouseDown)
-        self.window.bind("<ButtonRelease-1>", self.mouseRelease)
+        self.window.bind("<Button-1>", self.mouse_down)
+        self.window.bind("<ButtonRelease-1>", self.mouse_release)
         self.window.bind("<B1-Motion>", self.mouseMove)
-        print("unko")
+        self.window.bind("<FocusIn>", self.on_focus_in)
+        self.window.bind("<FocusOut>", self.on_focus_out)
+
+    def on_focus_in(self, event):
+        pass
+
+    def on_focus_out(self, event):
+        pass
 
     def on_click(self, event):
+
         print(f"{self.window.title()} がクリックされました")
 
-    def mouseDown(self, e):
+    def mouse_down(self, e):
         if e.num == 1:
             self.origin = (e.x, e.y)
             self.isMouseDown = True
 
-    def mouseRelease(self, e):
+    def mouse_release(self, e):
         self.isMouseDown = False
 
     def mouseMove(self, e):
@@ -50,7 +71,7 @@ class WindowBase(ABC):
 
     def syncSubWindow(self, dx, dy):
         # sub_window: WindowBase
-        for sub_window in self.pos_syncronized_windows:
+        for sub_window in self.syncronized_windows:
             buf = sub_window.window.geometry().split("+")
             current_x = int(buf[1])
             current_y = int(buf[2])

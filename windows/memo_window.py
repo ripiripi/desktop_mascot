@@ -1,12 +1,12 @@
 from .base_window import WindowBase
 import tkinter as tk
 from tkinter import font
-from .interface import Subject, Observer
+from .enum import Event
 
 
-class MemoWindow(WindowBase, Subject, Observer):
-    def __init__(self, root):
-        super().__init__(root, "メモウィンドウ", 300, 400, syncronized_windows=[])
+class MemoWindow(WindowBase):
+    def __init__(self, root, x_pos, y_pos):
+        super().__init__(root, "メモウィンドウ", 300, 400, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
 
     def setup_window(self):
 
@@ -23,6 +23,9 @@ class MemoWindow(WindowBase, Subject, Observer):
     def on_configure(self, event):
         pass  # 必要に応じて実装
 
+    def on_focus_in(self, event):
+        self.notify_observers(event=Event.set_charwindow_topmost)
+
     def decorate_text(self, event):
         content = self.text_widget.get("1.0", tk.END)
         self.text_widget.tag_remove("bold", "1.0", tk.END)
@@ -37,11 +40,5 @@ class MemoWindow(WindowBase, Subject, Observer):
             self.text_widget.tag_add("bold", start, end + "+2c")
             start = end + "+2c"
 
-    def add_observer(self, observer):
-        return super().add_observer(observer)
-
-    def notify_observers(self, event):
-        return super().notify_observers(event)
-
     def update(self, event):
-        return super().update(event)
+        pass

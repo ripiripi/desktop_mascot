@@ -7,10 +7,17 @@ from windows.memo_window import MemoWindow
 class DesktopMascotApp:
     def __init__(self, root):
         self.root = root
-        self.memo_window = MemoWindow(root)
-        self.bubble_window = BubbleWindow(root)
-        self.char_window = CharacterWindow(root, self.memo_window, self.bubble_window)
+        self.memo_window = MemoWindow(root, x_pos=250, y_pos=400)
+        self.bubble_window = BubbleWindow(root, x_pos=100, y_pos=250)
+        self.char_window = CharacterWindow(root, self.memo_window, self.bubble_window, x_pos=450, y_pos=250)
         self.memo_window.add_syncronized_window(self.char_window)
+
+        self.char_window.add_observer(self.memo_window)
+        self.char_window.add_observer(self.bubble_window)
+        self.memo_window.add_observer(self.char_window)
+        self.bubble_window.add_observer(self.char_window)
+        self.bubble_window.add_observer(self.memo_window)
+        self.memo_window.add_observer(self.bubble_window)
 
 
 if __name__ == "__main__":
