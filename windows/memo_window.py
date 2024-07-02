@@ -6,7 +6,7 @@ from .enum import Event
 
 class MemoWindow(WindowBase):
     def __init__(self, root, x_pos, y_pos):
-        super().__init__(root, "メモウィンドウ", 300, 400, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
+        super().__init__(root, "メモウィンドウ", 250, 300, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
 
     def setup_window(self):
 
@@ -22,9 +22,6 @@ class MemoWindow(WindowBase):
 
     def on_configure(self, event):
         pass  # 必要に応じて実装
-
-    def on_focus_in(self, event):
-        self.notify_observers(event=Event.set_charwindow_topmost)
 
     def decorate_text(self, event):
         content = self.text_widget.get("1.0", tk.END)

@@ -1,67 +1,74 @@
 from .base_window import WindowBase
 import tkinter as tk
 from atproto import Client
-from cryptography.fernet import Fernet
+from .utils.password import generate_key, save_credentials, load_credentials
 import os
-import json
 
-
-# キーの生成と保存（初回のみ実行）
-def generate_key():
-    key = Fernet.generate_key()
-    with open("secret.key", "wb") as key_file:
-        key_file.write(key)
-
-
-# キーの読み込み
-def load_key():
-    return open("secret.key", "rb").read()
-
-
-# パスワードの暗号化
-def encrypt_password(password):
-    key = load_key()
-    f = Fernet(key)
-    encrypted_password = f.encrypt(password.encode())
-    return encrypted_password
-
-
-# パスワードの復号化
-def decrypt_password(encrypted_password):
-    key = load_key()
-    f = Fernet(key)
-    decrypted_password = f.decrypt(encrypted_password)
-    return decrypted_password.decode()
-
-
-# ユーザー名とパスワードの保存
-def save_credentials(username, password):
-    encrypted_password = encrypt_password(password)
-    credentials = {"username": username, "password": encrypted_password.decode()}
-    with open("credentials.json", "w") as file:
-        json.dump(credentials, file)
-
-
-# ユーザー名とパスワードの読み込み
-def load_credentials():
-    with open("credentials.json", "r") as file:
-        credentials = json.load(file)
-        username = credentials["username"]
-        encrypted_password = credentials["password"].encode()
-        password = decrypt_password(encrypted_password)
-        return username, password
+import random
 
 
 class BubbleWindow(WindowBase):
     def __init__(self, root, x_pos, y_pos):
-        super().__init__(root, "吹き出しウィンドウ", 300, 100, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
+        self.window_width = 300 + 30  # 30 is for padding
+        self.window_height = 100
+        super().__init__(
+            root,
+            "吹き出しウィンドウ",
+            self.window_width,
+            self.window_height,
+            x_pos,
+            y_pos,
+            syncronized_windows=[],
+            topmost_flag=True,
+        )
         self.client = Client()
+
+        self.transparent_color = "#f0f0f0"
+        # ウィンドウの透過色を設定
+        self.window.attributes("-transparentcolor", self.transparent_color)
+
+        self.set_balloons()
+
         # 初回のみキー生成
         if not os.path.exists("secret.key"):
             generate_key()
         self.bluesky_login()
 
         self.update_sns_posts()
+
+    def set_balloons(self):
+        # Canvasウィジェットを作成、背景を透過させる
+        self.canvas = tk.Canvas(
+            self.window,
+            width=self.window_width,
+            height=self.window_height,
+            bg=self.transparent_color,
+            highlightthickness=0,
+        )
+        self.canvas.pack()
+
+        # 吹き出しの尾部となる三角形を描画
+        triangle = [
+            (300, 50),  # バルーンの右端から出るように調整
+            (310, 55),  # 三角形の先端をバルーンの中心線に合わせる
+            (300, 60),
+        ]
+        self.canvas.create_polygon(triangle, fill="ebffff", outline="ebffff")
+        # バルーンの本体部分を描画
+        # self.canvas.create_rectangle(0, 0, 300, 100, fill="white", outline="white")
+        radius = 10  # 角の丸みの半径
+
+        # 角が丸い長方形を描画するために、四隅に円を描く
+        self.canvas.create_oval(0, 0, radius * 2, radius * 2, fill="ebffff", outline="ebffff")  # 左上の角
+        self.canvas.create_oval(300 - radius * 2, 0, 300, radius * 2, fill="ebffff", outline="ebffff")  # 右上の角
+        self.canvas.create_oval(0, 100 - radius * 2, radius * 2, 100, fill="ebffff", outline="ebffff")  # 左下の角
+        self.canvas.create_oval(
+            300 - radius * 2, 100 - radius * 2, 300, 100, fill="ebffff", outline="ebffff"
+        )  # 右下の角
+
+        # 中央の長方形と上下の長方形を描画して、角が丸い長方形を完成させる
+        self.canvas.create_rectangle(radius, 0, 300 - radius, 100, fill="ebffff", outline="ebffff")  # 中央
+        self.canvas.create_rectangle(0, radius, 300, 100 - radius, fill="ebffff", outline="ebffff")  # 上下
 
     def bluesky_login(self):
 
@@ -81,10 +88,17 @@ class BubbleWindow(WindowBase):
 
     def update_sns_posts(self):
         response = self.client.get_timeline()
-        tl = {"feed": response.feed[20]}
+        rand_int = random.randint(0, 50)
+        tl = {"feed": response.feed[rand_int]}
         post_text = tl["feed"].post.record.text
-        label = tk.Label(self.window, text=post_text)
-        label.pack()
+        # label = tk.Label(self.window, text=post_text, wraplength=self.window.winfo_width() - 20)  # 20 is for padding
+        # label.pack(padx=10, pady=10)  # Set padding around the label
+        # label = tk.Label(self.window, text=post_text)
+        # label.pack()
+        label = tk.Label(
+            self.window, text=post_text, wraplength=self.window.winfo_width() - 20, anchor="w", justify="left"
+        )
+        label.pack(padx=10, pady=10, anchor="w")
         # self.window.after(300000, self.update_sns_posts)
 
     def display_settings(self):

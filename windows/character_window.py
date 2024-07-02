@@ -14,8 +14,11 @@ class CharacterWindow(WindowBase):
             syncronized_windows=[memo_window, bubble_window],
             topmost_flag=True,
         )
-        self.window.lift(memo_window.window)
+        # self.window.lift(memo_window.window)
+        memo_window.window.lift(self.window)
+
+    def on_focus_in(self, event):
+        self.syncronized_windows[0].window.lift(self.window)
 
     def update(self, event):
-        if event == Event.set_charwindow_topmost:
-            self.window.lift(self.syncronized_windows[0].window)  # memo window
+        pass
