@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import tkinter as tk
+from .enum import Event
 
 
 class WindowBase(ABC):
@@ -10,6 +11,7 @@ class WindowBase(ABC):
         self.window.wm_attributes("-topmost", topmost_flag)
         self.window.overrideredirect(True)
         self.observers = []
+        self.translucent = False
 
         # 位置移動を同期させるウィンドウ
         self.syncronized_windows: list[WindowBase] = syncronized_windows
@@ -29,19 +31,41 @@ class WindowBase(ABC):
         for observer in self.observers:
             observer.update(event)
 
-    @abstractmethod
     def update(self, event):
-        raise NotImplementedError("Subclass must implement 'update' method")
+        if event == Event.TRUNSLUCENT:
+            self.turn_translucent()
 
     def add_syncronized_window(self, window):
         self.syncronized_windows.append(window)
 
     def setup_window(self):
         self.window.bind("<Button-1>", self.mouse_down)
+        self.window.bind("<Button-3>", self.mouse_right_down)
         self.window.bind("<ButtonRelease-1>", self.mouse_release)
         self.window.bind("<B1-Motion>", self.mouseMove)
         self.window.bind("<FocusIn>", self.on_focus_in)
         self.window.bind("<FocusOut>", self.on_focus_out)
+        # ホバーイベントの設定
+        self.window.bind("<Enter>", self.on_mouse_enter)
+        self.window.bind("<Leave>", self.on_mouse_leave)
+
+    def mouse_right_down(self, event):
+        self.notify_observers(Event.TRUNSLUCENT)
+        self.turn_translucent()
+
+    def turn_translucent(self):
+        if self.translucent:
+            self.window.attributes("-alpha", 1.0)
+            self.translucent = False
+        else:
+            self.window.attributes("-alpha", 0.5)
+            self.translucent = True
+
+    def on_mouse_enter(self, event):
+        pass
+
+    def on_mouse_leave(self, event):
+        pass
 
     def on_focus_in(self, event):
         pass

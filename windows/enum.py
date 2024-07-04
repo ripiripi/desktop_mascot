@@ -2,4 +2,4 @@ import enum
 
 
 class Event(enum.Enum):
-    pass
+    TRUNSLUCENT = 0

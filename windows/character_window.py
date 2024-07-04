@@ -21,4 +21,4 @@ class CharacterWindow(WindowBase):
         self.syncronized_windows[0].window.lift(self.window)
 
     def update(self, event):
-        pass
+        super().update(event)

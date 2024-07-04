@@ -6,7 +6,8 @@ from .enum import Event
 
 class MemoWindow(WindowBase):
     def __init__(self, root, x_pos, y_pos):
-        super().__init__(root, "メモウィンドウ", 250, 300, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
+        super().__init__(root, "メモウィンドウ", 250, 250, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
+        # 透明度を設定するためのフラグ
 
     def setup_window(self):
 
@@ -38,4 +39,4 @@ class MemoWindow(WindowBase):
             start = end + "+2c"
 
     def update(self, event):
-        pass
+        super().update(event)
