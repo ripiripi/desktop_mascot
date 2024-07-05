@@ -38,5 +38,8 @@ class MemoWindow(WindowBase):
             self.text_widget.tag_add("bold", start, end + "+2c")
             start = end + "+2c"
 
+    def mouse_move(self, event):
+        pass
+
     def update(self, event):
         super().update(event)

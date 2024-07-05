@@ -15,7 +15,7 @@ class BubbleWindow(WindowBase):
         self.window_height_default = 100
         self.window_height = 100
         self.balloon_color = "#EFFBFB"
-        self.font = ("Helvetica Neue", 12)  # ("San Francisco", 10)
+        self.font = ("San Francisco", 12)  # ("Helvetica Neue", 12)  #
         self.current_alpha = 1.0  # 透明度
         self.hovering = False
 

@@ -20,5 +20,8 @@ class CharacterWindow(WindowBase):
     def on_focus_in(self, event):
         self.syncronized_windows[0].window.lift(self.window)
 
+    def mouse_double_click(self, event):
+        self.notify_observers(Event.DOUBLE_CLICK)
+
     def update(self, event):
         super().update(event)

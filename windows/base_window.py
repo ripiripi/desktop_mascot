@@ -40,14 +40,18 @@ class WindowBase(ABC):
 
     def setup_window(self):
         self.window.bind("<Button-1>", self.mouse_down)
+        self.window.bind("<Double-1>", self.mouse_double_click)
         self.window.bind("<Button-3>", self.mouse_right_down)
         self.window.bind("<ButtonRelease-1>", self.mouse_release)
-        self.window.bind("<B1-Motion>", self.mouseMove)
+        self.window.bind("<B1-Motion>", self.mouse_move)
         self.window.bind("<FocusIn>", self.on_focus_in)
         self.window.bind("<FocusOut>", self.on_focus_out)
         # ホバーイベントの設定
         self.window.bind("<Enter>", self.on_mouse_enter)
         self.window.bind("<Leave>", self.on_mouse_leave)
+
+    def mouse_double_click(self, event):
+        pass
 
     def mouse_right_down(self, event):
         self.notify_observers(Event.TRUNSLUCENT)
@@ -74,7 +78,6 @@ class WindowBase(ABC):
         pass
 
     def on_click(self, event):
-
         print(f"{self.window.title()} がクリックされました")
 
     def mouse_down(self, e):
@@ -85,7 +88,7 @@ class WindowBase(ABC):
     def mouse_release(self, e):
         self.isMouseDown = False
 
-    def mouseMove(self, e):
+    def mouse_move(self, e):
         if self.isMouseDown:
             buf = self.window.geometry().split("+")
             self.setPos(
