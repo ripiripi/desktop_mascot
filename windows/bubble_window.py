@@ -20,6 +20,8 @@ class BubbleWindow(WindowBase):
         self.current_alpha = 1.0  # 透明度
         self.hovering = False
         self.stop_post_update = False
+        self.isLogined = False
+        self.update_sns_timer = threading.Timer(6, self.fetch_and_update_sns_posts)
 
         super().__init__(
             root,
@@ -46,13 +48,14 @@ class BubbleWindow(WindowBase):
             highlightthickness=0,
         )
         self.canvas.pack()
-        self.set_balloons()
 
         # 初回のみキー生成
         if not os.path.exists("secret.key"):
             generate_key()
         self.bluesky_login()
 
+        if self.isLogined:
+            self.set_balloons()
         # 初回のSNS投稿をすぐに表示
         self.update_sns_posts()
         self.update_sns_posts_async()
@@ -133,20 +136,21 @@ class BubbleWindow(WindowBase):
     def bluesky_login(self):
 
         if not os.path.exists("credentials.json"):
-            print("please enter your username and password:")
-            username = input()
-            password = input()
-            # 保存
-            save_credentials(username, password)
+            return
 
         loaded_username, loaded_password = load_credentials()
         print("ユーザー名:", loaded_username)
         print("パスワード:", loaded_password)
 
-        self.client.login(loaded_username, loaded_password)
+        try:
+            self.client.login(loaded_username, loaded_password)
+            self.isLogined = True
+        except Exception as e:
+            print(e)
+            self.isLogined = False
 
     def update_sns_posts(self):
-        if self.stop_post_update:
+        if self.stop_post_update or self.isLogined is False:
             return
 
         response = self.client.get_timeline()
@@ -168,16 +172,6 @@ class BubbleWindow(WindowBase):
         self.canvas.delete("post_text")
 
         # ラベルを作成して追加
-
-        # label = tk.Label(
-        #    self.canvas,
-        #    text=post_text,
-        #    wraplength=self.window_width - 50,
-        #    anchor="nw",
-        #    justify="left",
-        #    bg=self.balloon_color,
-        #    font=self.font,
-        # )
         label = tk.Message(
             self.canvas,
             text=post_text,
@@ -201,7 +195,7 @@ class BubbleWindow(WindowBase):
         self.set_balloons()
 
     def update_sns_posts_async(self):
-        if not self.stop_post_update:
+        if not self.stop_post_update and self.isLogined:
             self.update_sns_timer = threading.Timer(6, self.fetch_and_update_sns_posts)
             self.update_sns_timer.start()
 
@@ -217,6 +211,7 @@ class BubbleWindow(WindowBase):
     def menu_mode(self):
         self.stop_update_sns_posts()  # 更新を停止
         self.window.lift()
+        self.show_balloon()
 
         # キャンバスウィジェットを再作成
         self.canvas.destroy()
@@ -306,9 +301,11 @@ class BubbleWindow(WindowBase):
             self.client.login(username, password)
             save_credentials(username, password)
             self.display_login_result("ログインしたよ")
+            self.isLogined = True
         except Exception as e:
             print(e)
             self.display_login_result("失敗したよ……")
+            self.isLogined = False
 
     def display_login_result(self, message):
         self.canvas.delete("all")
@@ -318,6 +315,18 @@ class BubbleWindow(WindowBase):
         self.window_height = 50
         self.window.geometry(f"{self.window_width}x{self.window_height}")
         self.set_balloons()
+
+        # 3秒後にSNS表示モードに戻るか、バルーンを非表示にする
+        if message == "ログインしたよ":
+            self.window.after(3000, self.return_to_sns_mode)
+        else:
+            self.window.after(3000, self.hide_balloon)
+
+    def hide_balloon(self):
+        self.window.withdraw()  # バルーンを非表示にする
+
+    def show_balloon(self):
+        self.window.deiconify()  # バルーンを再表示する
 
     def handle_option1(self):
         # オプション1の処理
@@ -336,15 +345,18 @@ class BubbleWindow(WindowBase):
 
     def display_aaa_and_return_to_sns(self):
         self.canvas.delete("all")
-        label = tk.Label(self.canvas, text="ん", font=self.font, bg=self.balloon_color)
+        label = tk.Label(self.canvas, text="おっけー", font=self.font, bg=self.balloon_color)
         self.canvas.create_window(10, 10, anchor="nw", window=label)
 
         self.window_height = label.winfo_reqheight() + 20
         self.window.geometry(f"{self.window_width}x{self.window_height}")
         self.set_balloons()
 
-        # 2秒後にバルーンを一時的に非表示にしてSNS投稿表示モードに戻る
-        self.window.after(2000, self.return_to_sns_mode)
+        if self.isLogined is True:
+            # 2秒後にバルーンを一時的に非表示にしてSNS投稿表示モードに戻る
+            self.window.after(4000, self.return_to_sns_mode)
+        else:
+            self.window.after(4000, self.hide_balloon)
 
     def display_goodbye_and_exit(self):
         self.canvas.delete("all")
@@ -362,10 +374,10 @@ class BubbleWindow(WindowBase):
         self.root.quit()  # アプリケーションを終了する
 
     def return_to_sns_mode(self):
-        self.window.withdraw()  # バルーンを一時的に非表示にする
+        self.hide_balloon()
         self.stop_post_update = False
-        self.update_sns_posts_async()
-        self.window.deiconify()  # バルーンを再表示する
+        self.fetch_and_update_sns_posts()
+        self.show_balloon()  # バルーンを再表示する
 
     def on_label_enter(self, event):
         label = event.widget
@@ -388,4 +400,5 @@ class BubbleWindow(WindowBase):
     def update(self, event):
         super().update(event)
         if event == Event.START_MENU_MODE:
+            print("double clicked")
             self.menu_mode()
