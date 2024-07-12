@@ -5,6 +5,7 @@ from .enum import Event
 
 class WindowBase(ABC):
     def __init__(self, root, title, width, height, x_pos=0, y_pos=0, syncronized_windows=[], topmost_flag=False):
+        self.root = root
         self.window = tk.Toplevel(root)
         self.window.geometry(f"{width}x{height}+{x_pos}+{y_pos}")
         self.window.title(title)

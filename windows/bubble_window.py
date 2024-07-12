@@ -273,6 +273,7 @@ class BubbleWindow(WindowBase):
     def handle_option2(self):
         # オプション2の処理
         print("オプション2が選択されました")
+        self.display_goodbye_and_exit()
 
     def handle_option3(self):
         # オプション3の処理
@@ -290,6 +291,21 @@ class BubbleWindow(WindowBase):
 
         # 2秒後にバルーンを一時的に非表示にしてSNS投稿表示モードに戻る
         self.window.after(2000, self.return_to_sns_mode)
+
+    def display_goodbye_and_exit(self):
+        self.canvas.delete("all")
+        label = tk.Label(self.canvas, text="じゃあね！", font=self.font, bg=self.balloon_color)
+        self.canvas.create_window(10, 10, anchor="nw", window=label)
+
+        self.window_height = label.winfo_reqheight() + 20
+        self.window.geometry(f"{self.window_width}x{self.window_height}")
+        self.set_balloons()
+
+        # 3秒後にアプリケーションを終了する
+        self.window.after(2000, self.exit_application)
+
+    def exit_application(self):
+        self.root.quit()  # アプリケーションを終了する
 
     def return_to_sns_mode(self):
         self.window.withdraw()  # バルーンを一時的に非表示にする
