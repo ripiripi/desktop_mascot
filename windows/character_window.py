@@ -21,7 +21,9 @@ class CharacterWindow(WindowBase):
         self.syncronized_windows[0].window.lift(self.window)
 
     def mouse_double_click(self, event):
-        self.notify_observers(Event.DOUBLE_CLICK)
+        # メニューモードへの切り替え
+        # TODO: アニメーション処理（反応）
+        self.notify_observers(Event.START_MENU_MODE)
 
     def update(self, event):
         super().update(event)
