@@ -288,7 +288,11 @@ class BubbleWindow(WindowBase):
 
         # OKボタンを作成
         ok_button = tk.Button(
-            self.canvas, text="OK", font=self.font, command=lambda: self.attempt_login(id_entry.get(), pw_entry.get())
+            self.canvas,
+            text="OK",
+            font=self.font,
+            command=lambda: self.attempt_login(id_entry.get(), pw_entry.get()),
+            bg="white",
         )
         self.canvas.create_window(10, 100, anchor="nw", window=ok_button)
 
