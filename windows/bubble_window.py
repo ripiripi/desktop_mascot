@@ -53,6 +53,8 @@ class BubbleWindow(WindowBase):
             generate_key()
         self.bluesky_login()
 
+        # 初回のSNS投稿をすぐに表示
+        self.update_sns_posts()
         self.update_sns_posts_async()
 
     def set_balloons(self):
@@ -60,10 +62,7 @@ class BubbleWindow(WindowBase):
         # 既存のラベルを削除
         self.canvas.delete("balloon")
         self.window.geometry(f"{self.window_width}x{self.window_height}")
-        print("window_height", self.window_height, "window_width", self.window_width)
         self.canvas.config(height=self.window_height, width=self.window_width)
-        print("window_width_default", self.window_width_default)
-        print("canvas_width", self.canvas.winfo_width())
 
         hukidasi_height = self.window_height / 2
         # 吹き出しの尾部となる三角形を描画
@@ -159,6 +158,9 @@ class BubbleWindow(WindowBase):
         # response.feed[rand_int]の中身を確認
         # print(response.feed[rand_int])
 
+        if self.stop_post_update:
+            return
+
         post_text, image_url = extract_post_content(post)  # tl["feed"].post.record.text
         print(image_url)
 
@@ -199,14 +201,21 @@ class BubbleWindow(WindowBase):
         self.set_balloons()
 
     def update_sns_posts_async(self):
-        threading.Thread(target=self.fetch_and_update_sns_posts).start()
+        if not self.stop_post_update:
+            self.update_sns_timer = threading.Timer(6, self.fetch_and_update_sns_posts)
+            self.update_sns_timer.start()
 
     def fetch_and_update_sns_posts(self):
         self.update_sns_posts()
-        self.window.after(6000, self.update_sns_posts_async)
+        self.update_sns_posts_async()
+
+    def stop_update_sns_posts(self):
+        self.stop_post_update = True
+        if self.update_sns_timer:
+            self.update_sns_timer.cancel()
 
     def menu_mode(self):
-        self.stop_post_update = True
+        self.stop_update_sns_posts()  # 更新を停止
         self.window.lift()
 
         # キャンバスウィジェットを再作成
@@ -223,7 +232,7 @@ class BubbleWindow(WindowBase):
         # self.canvas.delete("all")
 
         # メニューとして表示するオプション
-        options = ["SNS (Bluesky)の設定をする", "さようなら ", "なんでもない"]
+        options = ["SNS (Bluesky)の設定をする", "さようなら", "なんでもない"]
         label_height = 0
 
         for option in options:
@@ -234,6 +243,7 @@ class BubbleWindow(WindowBase):
                 bg=self.balloon_color,
                 anchor="nw",
                 justify="left",
+                cursor="hand2",
             )
             label.bind("<Button-1>", lambda event, opt=option: self.option_selected(opt))
             label.bind("<Enter>", self.on_label_enter)
@@ -243,16 +253,17 @@ class BubbleWindow(WindowBase):
             label_height += label.winfo_reqheight() + 10
 
         self.window_height = label_height + 10
+        self.window.geometry(f"{self.window_width}x{self.window_height}")
         self.set_balloons()
 
     def option_selected(self, option):
         print(f"選択されたオプション: {option}")
         # ここでオプションに応じた処理を実行します
-        if option == "オプション1":
+        if option == "SNS (Bluesky)の設定をする":
             self.handle_option1()
-        elif option == "オプション2":
+        elif option == "さようなら":
             self.handle_option2()
-        elif option == "オプション3":
+        elif option == "なんでもない":
             self.handle_option3()
 
     def handle_option1(self):
@@ -270,15 +281,15 @@ class BubbleWindow(WindowBase):
 
     def display_aaa_and_return_to_sns(self):
         self.canvas.delete("all")
-        label = tk.Label(self.canvas, text="了解！", font=self.font, bg=self.balloon_color)
+        label = tk.Label(self.canvas, text="ん", font=self.font, bg=self.balloon_color)
         self.canvas.create_window(10, 10, anchor="nw", window=label)
 
         self.window_height = label.winfo_reqheight() + 20
         self.window.geometry(f"{self.window_width}x{self.window_height}")
         self.set_balloons()
 
-        # 3秒後にバルーンを一時的に非表示にしてSNS投稿表示モードに戻る
-        self.window.after(3000, self.return_to_sns_mode)
+        # 2秒後にバルーンを一時的に非表示にしてSNS投稿表示モードに戻る
+        self.window.after(2000, self.return_to_sns_mode)
 
     def return_to_sns_mode(self):
         self.window.withdraw()  # バルーンを一時的に非表示にする
