@@ -266,9 +266,63 @@ class BubbleWindow(WindowBase):
         elif option == "なんでもない":
             self.handle_option3()
 
+    def display_login_form(self):
+        self.canvas.delete("all")
+
+        # 説明ラベルを作成
+        label = tk.Label(self.canvas, text="IDとパスワードを入力してね", font=self.font, bg=self.balloon_color)
+        self.canvas.create_window(10, 10, anchor="nw", window=label)
+
+        # ID入力フォーム
+        id_label = tk.Label(self.canvas, text="ID:", font=self.font, bg=self.balloon_color)
+        self.canvas.create_window(10, 40, anchor="nw", window=id_label)
+        id_entry = tk.Entry(self.canvas, font=self.font)
+        self.canvas.create_window(80, 40, anchor="nw", window=id_entry)
+
+        # パスワード入力フォーム
+        pw_label = tk.Label(self.canvas, text="パスワード:", font=self.font, bg=self.balloon_color)
+        self.canvas.create_window(10, 70, anchor="nw", window=pw_label)
+        pw_entry = tk.Entry(self.canvas, font=self.font, show="*")
+        self.canvas.create_window(80, 70, anchor="nw", window=pw_entry)
+
+        # ログイン情報がある場合は読み込んで入力フォームに表示
+        if os.path.exists("credentials.json"):
+            loaded_username, loaded_password = load_credentials()
+            id_entry.insert(0, loaded_username)
+            pw_entry.insert(0, loaded_password)
+
+        # OKボタンを作成
+        ok_button = tk.Button(
+            self.canvas, text="OK", font=self.font, command=lambda: self.attempt_login(id_entry.get(), pw_entry.get())
+        )
+        self.canvas.create_window(10, 100, anchor="nw", window=ok_button)
+
+        self.window_height = 150
+        self.window.geometry(f"{self.window_width}x{self.window_height}")
+        self.set_balloons()
+
+    def attempt_login(self, username, password):
+        try:
+            self.client.login(username, password)
+            save_credentials(username, password)
+            self.display_login_result("ログインしたよ")
+        except Exception as e:
+            print(e)
+            self.display_login_result("失敗したよ……")
+
+    def display_login_result(self, message):
+        self.canvas.delete("all")
+        label = tk.Label(self.canvas, text=message, font=self.font, bg=self.balloon_color)
+        self.canvas.create_window(10, 10, anchor="nw", window=label)
+
+        self.window_height = 50
+        self.window.geometry(f"{self.window_width}x{self.window_height}")
+        self.set_balloons()
+
     def handle_option1(self):
         # オプション1の処理
         print("オプション1が選択されました")
+        self.display_login_form()
 
     def handle_option2(self):
         # オプション2の処理
