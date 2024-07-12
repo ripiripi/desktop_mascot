@@ -6,6 +6,7 @@ from .utils.post import extract_post_content
 import os
 import random
 import threading
+from .enum import Event
 
 
 class BubbleWindow(WindowBase):
@@ -18,6 +19,7 @@ class BubbleWindow(WindowBase):
         self.font = ("San Francisco", 12)  # ("Helvetica Neue", 12)  #
         self.current_alpha = 1.0  # 透明度
         self.hovering = False
+        self.stop_post_update = False
 
         super().__init__(
             root,
@@ -58,7 +60,10 @@ class BubbleWindow(WindowBase):
         # 既存のラベルを削除
         self.canvas.delete("balloon")
         self.window.geometry(f"{self.window_width}x{self.window_height}")
-        self.canvas.config(height=self.window_height)
+        print("window_height", self.window_height, "window_width", self.window_width)
+        self.canvas.config(height=self.window_height, width=self.window_width)
+        print("window_width_default", self.window_width_default)
+        print("canvas_width", self.canvas.winfo_width())
 
         hukidasi_height = self.window_height / 2
         # 吹き出しの尾部となる三角形を描画
@@ -142,6 +147,9 @@ class BubbleWindow(WindowBase):
         self.client.login(loaded_username, loaded_password)
 
     def update_sns_posts(self):
+        if self.stop_post_update:
+            return
+
         response = self.client.get_timeline()
         rand_int = random.randint(0, len(response.feed) - 1)
 
@@ -197,12 +205,106 @@ class BubbleWindow(WindowBase):
         self.update_sns_posts()
         self.window.after(6000, self.update_sns_posts_async)
 
-    def display_settings(self):
+    def menu_mode(self):
+        self.stop_post_update = True
         self.window.lift()
-        for widget in self.window.winfo_children():
-            widget.destroy()
-        label = tk.Label(self.window, text="設定変更オプション")
-        label.pack()
+
+        # キャンバスウィジェットを再作成
+        self.canvas.destroy()
+        self.canvas = tk.Canvas(
+            self.window,
+            width=self.window_width,
+            height=self.window_height,
+            bg=self.transparent_color,
+            highlightthickness=0,
+        )
+        self.canvas.pack()
+        # キャンバスのすべての要素を削除
+        # self.canvas.delete("all")
+
+        # メニューとして表示するオプション
+        options = ["SNS (Bluesky)の設定をする", "さようなら ", "なんでもない"]
+        label_height = 0
+
+        for option in options:
+            label = tk.Label(
+                self.canvas,
+                text=option,
+                font=self.font,
+                bg=self.balloon_color,
+                anchor="nw",
+                justify="left",
+            )
+            label.bind("<Button-1>", lambda event, opt=option: self.option_selected(opt))
+            label.bind("<Enter>", self.on_label_enter)
+            label.bind("<Leave>", self.on_label_leave)
+            label.original_font = label.cget("font")  # 元のフォントを保存
+            self.canvas.create_window(10, label_height + 10, anchor="nw", window=label)
+            label_height += label.winfo_reqheight() + 10
+
+        self.window_height = label_height + 10
+        self.set_balloons()
+
+    def option_selected(self, option):
+        print(f"選択されたオプション: {option}")
+        # ここでオプションに応じた処理を実行します
+        if option == "オプション1":
+            self.handle_option1()
+        elif option == "オプション2":
+            self.handle_option2()
+        elif option == "オプション3":
+            self.handle_option3()
+
+    def handle_option1(self):
+        # オプション1の処理
+        print("オプション1が選択されました")
+
+    def handle_option2(self):
+        # オプション2の処理
+        print("オプション2が選択されました")
+
+    def handle_option3(self):
+        # オプション3の処理
+        print("オプション3が選択されました")
+        self.display_aaa_and_return_to_sns()
+
+    def display_aaa_and_return_to_sns(self):
+        self.canvas.delete("all")
+        label = tk.Label(self.canvas, text="了解！", font=self.font, bg=self.balloon_color)
+        self.canvas.create_window(10, 10, anchor="nw", window=label)
+
+        self.window_height = label.winfo_reqheight() + 20
+        self.window.geometry(f"{self.window_width}x{self.window_height}")
+        self.set_balloons()
+
+        # 3秒後にバルーンを一時的に非表示にしてSNS投稿表示モードに戻る
+        self.window.after(3000, self.return_to_sns_mode)
+
+    def return_to_sns_mode(self):
+        self.window.withdraw()  # バルーンを一時的に非表示にする
+        self.stop_post_update = False
+        self.update_sns_posts_async()
+        self.window.deiconify()  # バルーンを再表示する
+
+    def on_label_enter(self, event):
+        label = event.widget
+        label.config(bg="#d1e7e7")
+        self.animate_label(label, 1.1)
+
+    def on_label_leave(self, event):
+        label = event.widget
+        label.config(bg=self.balloon_color)
+        label.config(font=label.original_font)  # 元のフォントに戻す
+
+    def animate_label(self, label, scale_factor):
+        # ラベルのフォントサイズをアニメーションさせる
+        original_font = label.original_font
+        font_name, font_size = original_font.rsplit(" ", 1)
+        font_size = int(float(font_size) * scale_factor)
+        new_font = f"{font_name} {font_size}"
+        label.config(font=new_font)
 
     def update(self, event):
         super().update(event)
+        if event == Event.START_MENU_MODE:
+            self.menu_mode()
