@@ -1,5 +1,7 @@
 from .base_window import WindowBase
 import tkinter as tk
+from tkinter import ttk
+import customtkinter as ctk
 from tkinter import font
 from .enum import Event
 import os
@@ -7,19 +9,34 @@ import os
 
 class MemoWindow(WindowBase):
     def __init__(self, root, x_pos, y_pos):
+        self.width = 250
+        self.height = 250
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.topmost_flag = True
+        self.file_path = "assets/text.txt"
+        self.auto_save_interval = 5000  # 自動保存の間隔（ミリ秒）
         super().__init__(root, "メモウィンドウ", 250, 250, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
 
     def setup_window(self):
-        self.text_widget = tk.Text(self.window)
-        self.text_widget.pack(expand=True, fill=tk.BOTH)
-        self.file_path = "assets/text.txt"
-        self.auto_save_interval = 5000  # 自動保存の間隔（ミリ秒）
+        # 外側に黒色のフレームを追加（角を丸くしない）
+        self.outer_frame = ctk.CTkFrame(self.window, fg_color="#000000", corner_radius=0)
+        self.outer_frame.pack(expand=True, fill=ctk.BOTH)
+
+        # 内側に白色のフレームを追加しパディングを適用（角を丸くしない）
+        self.inner_frame = ctk.CTkFrame(self.outer_frame, fg_color="#FFFFFF", corner_radius=0)
+        self.inner_frame.pack(expand=True, fill=ctk.BOTH, padx=1, pady=1)
+
+        # テキストウィジェットを配置
+        self.text_widget = tk.Text(self.inner_frame, wrap=tk.WORD, bd=0, bg="#FFFFFF", fg="#000000")
+        self.text_widget.pack(side=tk.LEFT, expand=True, fill=tk.BOTH, padx=10, pady=10)
 
         bold_font = font.Font(self.text_widget, self.text_widget.cget("font"))
         bold_font.configure(weight="bold")
         self.text_widget.tag_configure("bold", font=bold_font)
 
         self.text_widget.bind("<KeyRelease>", self.decorate_text)
+
         self.load_text()
 
         super().setup_window()
