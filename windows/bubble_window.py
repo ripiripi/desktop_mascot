@@ -155,6 +155,7 @@ class BubbleWindow(WindowBase):
         if self.stop_post_update or self.isLogined is False:
             return
 
+        self.canvas.delete("all")
         response = self.client.get_timeline()
         rand_int = random.randint(0, len(response.feed) - 1)
 
@@ -170,6 +171,10 @@ class BubbleWindow(WindowBase):
         # 既存のラベルと画像を削除
         self.canvas.delete("post_text")
         self.canvas.delete("post_image")
+
+        image_height = 0
+        if image_url:
+            image = fetch_image(image_url, max_width=self.window_width - 50, max_height=330)
 
         label_height = 0
         if post_text.strip():
@@ -190,14 +195,11 @@ class BubbleWindow(WindowBase):
             label_height = label.winfo_reqheight()
 
         # 画像がある場合は画像を取得して表示
-        image_height = 0
-        if image_url:
-            image = fetch_image(image_url, max_width=self.window_width - 50, max_height=330)
-            if image:
-                self.photo_image = ImageTk.PhotoImage(image)
-                image_label = tk.Label(self.canvas, image=self.photo_image, bg=self.balloon_color)
-                self.canvas.create_window(5, label_height + 20, window=image_label, anchor="nw", tags="post_image")
-                image_height = image.height
+        if image_url and image:
+            self.photo_image = ImageTk.PhotoImage(image)
+            image_label = tk.Label(self.canvas, image=self.photo_image, bg=self.balloon_color)
+            self.canvas.create_window(5, label_height + 20, window=image_label, anchor="nw", tags="post_image")
+            image_height = image.height
 
         # バルーンの高さを調整し、再描画
         if image_height == 0:
@@ -363,7 +365,7 @@ class BubbleWindow(WindowBase):
     def display_aaa_and_return_to_sns(self):
         self.canvas.delete("all")
         label = tk.Label(self.canvas, text="おっけー", font=self.font, bg=self.balloon_color)
-        self.canvas.create_window(10, 10, anchor="nw", window=label)
+        self.canvas.create_window(10, 10, anchor="nw", window=label, tags="all")
 
         self.window_height = label.winfo_reqheight() + 20
         self.window.geometry(f"{self.window_width}x{self.window_height}")
