@@ -2,8 +2,9 @@ from .base_window import WindowBase
 import tkinter as tk
 from tkinter import font as tkfont
 from atproto import Client
+from PIL import Image, ImageTk
 from .utils.password import generate_key, save_credentials, load_credentials
-from .utils.post import extract_post_content
+from .utils.post import extract_post_content, fetch_image
 import os
 import random
 import threading
@@ -68,7 +69,7 @@ class BubbleWindow(WindowBase):
         self.window.geometry(f"{self.window_width}x{self.window_height}")
         self.canvas.config(height=self.window_height, width=self.window_width)
 
-        hukidasi_height = self.window_height / 2
+        hukidasi_height = min(self.window_height / 2, 40)
         # 吹き出しの尾部となる三角形を描画
         triangle = [
             (self.window_width_default, hukidasi_height - 5),  # バルーンの右端から出るように調整
@@ -159,41 +160,51 @@ class BubbleWindow(WindowBase):
 
         print("response_len", len(response.feed))
         post = response.feed[rand_int].post
-        # print(type(response.feed[rand_int]))
-        # response.feed[rand_int]の中身を確認
-        # print(response.feed[rand_int])
 
         if self.stop_post_update:
             return
 
-        post_text, image_url = extract_post_content(post)  # tl["feed"].post.record.text
+        post_text, image_url = extract_post_content(post)
         print(image_url)
 
-        # 既存のラベルを削除
+        # 既存のラベルと画像を削除
         self.canvas.delete("post_text")
-        self.canvas.delete("all")
+        self.canvas.delete("post_image")
 
-        # ラベルを作成して追加
-        label = tk.Message(
-            self.canvas,
-            text=post_text,
-            width=self.window_width - 50,
-            anchor="nw",
-            justify="left",
-            bg=self.balloon_color,
-            font=self.font,
-        )
-        self.canvas.update_idletasks()  # レイアウトを確定
+        label_height = 0
+        if post_text.strip():
+            # ラベルを作成して追加
+            label = tk.Message(
+                self.canvas,
+                text=post_text,
+                width=self.window_width - 50,
+                anchor="nw",
+                justify="left",
+                bg=self.balloon_color,
+                font=self.font,
+            )
+            self.canvas.update_idletasks()  # レイアウトを確定
 
-        self.canvas.create_window(5, 10, window=label, anchor="nw", tags="post_text")
+            self.canvas.create_window(5, 10, window=label, anchor="nw", tags="post_text")
 
-        label_height = label.winfo_reqheight()
+            label_height = label.winfo_reqheight()
 
-        # サイズを確認
-        print(f"height: {label_height}")
+        # 画像がある場合は画像を取得して表示
+        image_height = 0
+        if image_url:
+            image = fetch_image(image_url, max_width=self.window_width - 50, max_height=330)
+            if image:
+                self.photo_image = ImageTk.PhotoImage(image)
+                image_label = tk.Label(self.canvas, image=self.photo_image, bg=self.balloon_color)
+                self.canvas.create_window(5, label_height + 20, window=image_label, anchor="nw", tags="post_image")
+                image_height = image.height
 
-        # バルーンの高さをlabel_height + 20になるように調整し、再描画
-        self.window_height = label_height + 20
+        # バルーンの高さを調整し、再描画
+        if image_height == 0:
+            self.window_height = label_height + image_height + 20  # 画像がある場合はその高さも考慮
+        else:
+            self.window_height = label_height + image_height + 30
+
         self.set_balloons()
 
     def update_sns_posts_async(self):
