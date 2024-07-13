@@ -1,5 +1,6 @@
 from .base_window import WindowBase
 import tkinter as tk
+from tkinter import font as tkfont
 from atproto import Client
 from .utils.password import generate_key, save_credentials, load_credentials
 from .utils.post import extract_post_content
@@ -16,7 +17,7 @@ class BubbleWindow(WindowBase):
         self.window_height_default = 100
         self.window_height = 100
         self.balloon_color = "#EFFBFB"
-        self.font = ("San Francisco", 12)  # ("Helvetica Neue", 12)  #
+        self.font = tkfont.Font(family="San Francisco", size=12)  # ("San Francisco", 12)  # ("Helvetica Neue", 12)  #
         self.current_alpha = 1.0  # 透明度
         self.hovering = False
         self.stop_post_update = False
@@ -170,6 +171,7 @@ class BubbleWindow(WindowBase):
 
         # 既存のラベルを削除
         self.canvas.delete("post_text")
+        self.canvas.delete("all")
 
         # ラベルを作成して追加
         label = tk.Message(
@@ -386,20 +388,12 @@ class BubbleWindow(WindowBase):
     def on_label_enter(self, event):
         label = event.widget
         label.config(bg="#d1e7e7")
-        self.animate_label(label, 1.1)
+        # self.animate_label(label, 1.1)
 
     def on_label_leave(self, event):
         label = event.widget
         label.config(bg=self.balloon_color)
         label.config(font=label.original_font)  # 元のフォントに戻す
-
-    def animate_label(self, label, scale_factor):
-        # ラベルのフォントサイズをアニメーションさせる
-        original_font = label.original_font
-        font_name, font_size = original_font.rsplit(" ", 1)
-        font_size = int(float(font_size) * scale_factor)
-        new_font = f"{font_name} {font_size}"
-        label.config(font=new_font)
 
     def update(self, event):
         super().update(event)
