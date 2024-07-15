@@ -2,6 +2,7 @@ from .base_window import WindowBase
 from .enum import Event
 import tkinter as tk
 from PIL import Image, ImageTk
+import random
 
 
 class CharacterWindow(WindowBase):
@@ -31,29 +32,38 @@ class CharacterWindow(WindowBase):
         self.window.attributes("-transparentcolor", self.window["bg"])
 
         # 画像をロードしてリサイズ
-        image = Image.open("./assets/image/tekku_250.png")
+        self.default_image_path = "./assets/image/tekku_0.png"
+        self.blink_image_paths = ["./assets/image/tekku_1.png", "./assets/image/tekku_2.png"]
+        self.load_images()
 
-        # 背景を透明に変換
-        image = self.make_background_fully_transparent(image, (255, 0, 0), tolerance=15)
-
-        # 画像の比率を保ったままリサイズ
-        original_width, original_height = image.size
-        max_width, max_height = self.pic_x, self.pic_y
-
-        ratio = min(max_width / original_width, max_height / original_height)
-        new_width = int(original_width * ratio)
-        new_height = int(original_height * ratio)
-
-        resized_image = image.resize((new_width, new_height))
-        self.character_image = ImageTk.PhotoImage(resized_image)
-
-        # キャンバスのサイズをリサイズ後の画像サイズに合わせる
-        self.canvas.config(width=new_width, height=new_height)
-
-        # 画像をキャンバスに表示
-        self.canvas.create_image(new_width // 2, new_height // 2, image=self.character_image, anchor=tk.CENTER)
+        # デフォルトの画像を表示
+        self.display_image(self.character_images[0])
 
         memo_window.window.lift(self.window)
+
+        # 一秒ごとにmabatakiメソッドを呼び出す
+        self.window.after(1000, self.mabataki)
+
+    def load_images(self):
+        # 画像をロードしてリサイズ
+        self.character_images = []
+        default_image = Image.open(self.default_image_path)
+        self.character_images.append(self.prepare_image(default_image))
+
+        for path in self.blink_image_paths:
+            image = Image.open(path)
+            self.character_images.append(self.prepare_image(image))
+
+    def prepare_image(self, image):
+        # 背景を透明に変換
+        image = self.make_background_fully_transparent(image, (255, 0, 0), tolerance=15)
+        # 画像の比率を保ったままリサイズ
+        resized_image = self.resize_image(image, self.pic_x, self.pic_y)
+        return ImageTk.PhotoImage(resized_image)
+
+    def display_image(self, image):
+        self.canvas.config(width=image.width(), height=image.height())
+        self.canvas.create_image(image.width() // 2, image.height() // 2, image=image, anchor=tk.CENTER)
 
     def resize_image(self, image, max_width, max_height):
         original_width, original_height = image.size
@@ -96,3 +106,35 @@ class CharacterWindow(WindowBase):
                     image.putpixel((x, y), (r, g, b, 0))
 
         return image
+
+    def mabataki(self):
+        print("mabataki")
+        # 一定確率でまばたきを行う
+        if random.random() < 0.45:
+            self.start_blinking()
+
+        # 次の呼び出しを1秒後に設定
+        self.window.after(1000, self.mabataki)
+
+    def start_blinking(self):
+        self.blink_index = 0
+        self.blink_sequence = [0, 1, 2, 1, 0]
+        self.blink_images()
+
+    def blink_images(self):
+        if self.blink_index < len(self.blink_sequence):
+            image_index = self.blink_sequence[self.blink_index]
+            self.display_image(self.character_images[image_index])
+
+            trans_time = 0
+            if self.blink_index % 2 == 0:
+                trans_time = random.randint(25, 45)
+                self.window.after(trans_time, self.blink_images)
+            else:
+                if self.blink_index == 3:
+                    trans_time = random.randint(15, 45)
+                    self.window.after(25, self.blink_images)
+                else:
+                    trans_time = random.randint(60, 100)
+                    self.window.after(80, self.blink_images)
+            self.blink_index += 1
