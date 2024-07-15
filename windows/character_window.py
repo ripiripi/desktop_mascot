@@ -27,7 +27,7 @@ class CharacterWindow(WindowBase):
         self.window.attributes("-transparentcolor", self.window["bg"])
 
         # 画像をロードしてリサイズ
-        image = Image.open("./assets/image/body.png")
+        image = Image.open("./assets/image/tekku_250.png")
 
         # 背景を透明に変換
         image = self.make_background_fully_transparent(image, (255, 0, 0), tolerance=15)
