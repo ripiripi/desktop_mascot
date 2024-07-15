@@ -17,13 +17,12 @@ class DesktopMascotApp:
             root, self.memo_window, self.bubble_window, self.hand_window, x_pos=char_window_x, y_pos=char_window_y
         )
         self.memo_window.add_syncronized_window([self.hand_window, self.char_window])
+        self.hand_window.add_syncronized_window([self.memo_window, self.char_window, self.bubble_window])
 
-        self.char_window.add_observer(self.memo_window)
-        self.char_window.add_observer(self.bubble_window)
-        self.memo_window.add_observer(self.char_window)
-        self.bubble_window.add_observer(self.char_window)
-        self.bubble_window.add_observer(self.memo_window)
-        self.memo_window.add_observer(self.bubble_window)
+        self.char_window.add_observer([self.memo_window, self.bubble_window, self.hand_window])
+        self.memo_window.add_observer([self.char_window, self.bubble_window, self.hand_window])
+        self.bubble_window.add_observer([self.char_window, self.memo_window, self.hand_window])
+        self.hand_window.add_observer([self.char_window, self.memo_window, self.bubble_window])
 
 
 if __name__ == "__main__":

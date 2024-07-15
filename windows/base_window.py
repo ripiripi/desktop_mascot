@@ -25,8 +25,9 @@ class WindowBase(ABC):
 
         self.setup_window()
 
-    def add_observer(self, observer):
-        self.observers.append(observer)
+    def add_observer(self, observers: list):
+        for observer in observers:
+            self.observers.append(observer)
 
     def notify_observers(self, event):
         for observer in self.observers:
