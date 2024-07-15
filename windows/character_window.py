@@ -128,13 +128,13 @@ class CharacterWindow(WindowBase):
 
             trans_time = 0
             if self.blink_index % 2 == 0:
-                trans_time = random.randint(25, 45)
+                trans_time = random.randint(30, 50)
                 self.window.after(trans_time, self.blink_images)
             else:
                 if self.blink_index == 3:
-                    trans_time = random.randint(15, 45)
+                    trans_time = random.randint(20, 60)
                     self.window.after(25, self.blink_images)
                 else:
-                    trans_time = random.randint(60, 100)
+                    trans_time = random.randint(65, 105)
                     self.window.after(80, self.blink_images)
             self.blink_index += 1
