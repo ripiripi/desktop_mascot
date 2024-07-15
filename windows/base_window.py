@@ -36,8 +36,9 @@ class WindowBase(ABC):
         if event == Event.TRUNSLUCENT:
             self.turn_translucent()
 
-    def add_syncronized_window(self, window):
-        self.syncronized_windows.append(window)
+    def add_syncronized_window(self, window_list: list):
+        for window in window_list:
+            self.syncronized_windows.append(window)
 
     def setup_window(self):
         self.window.bind("<Button-1>", self.mouse_down)
