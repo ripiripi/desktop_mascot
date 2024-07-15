@@ -1,29 +1,23 @@
 from .base_window import WindowBase
-from .enum import Event
 import tkinter as tk
 from PIL import Image, ImageTk
 
 
-class CharacterWindow(WindowBase):
-    def __init__(self, root, memo_window, bubble_window, hand_window, x_pos, y_pos):
+class HandWindow(WindowBase):
+    def __init__(self, root, x_pos, y_pos):
         self.pic_x = 250
         self.pic_y = 1000
         super().__init__(
             root,
-            "キャラウィンドウ",
+            "ハンドウィンドウ",
             self.pic_x,
             self.pic_y,
             x_pos,
             y_pos,
-            syncronized_windows=[
-                memo_window,
-                hand_window,
-                bubble_window,
-            ],
+            syncronized_windows=[],
             topmost_flag=True,
         )
 
-        memo_window.window.lift(self.window)
         self.canvas = tk.Canvas(self.window, width=self.pic_x, height=self.pic_y, highlightthickness=0)
         self.canvas.pack()
 
@@ -31,7 +25,7 @@ class CharacterWindow(WindowBase):
         self.window.attributes("-transparentcolor", self.window["bg"])
 
         # 画像をロードしてリサイズ
-        image = Image.open("./assets/image/tekku_250.png")
+        image = Image.open("./assets/image/hand_250.png")
 
         # 背景を透明に変換
         image = self.make_background_fully_transparent(image, (255, 0, 0), tolerance=15)
@@ -45,34 +39,13 @@ class CharacterWindow(WindowBase):
         new_height = int(original_height * ratio)
 
         resized_image = image.resize((new_width, new_height))
-        self.character_image = ImageTk.PhotoImage(resized_image)
+        self.hand_image = ImageTk.PhotoImage(resized_image)
 
         # キャンバスのサイズをリサイズ後の画像サイズに合わせる
         self.canvas.config(width=new_width, height=new_height)
 
         # 画像をキャンバスに表示
-        self.canvas.create_image(new_width // 2, new_height // 2, image=self.character_image, anchor=tk.CENTER)
-
-        memo_window.window.lift(self.window)
-
-    def resize_image(self, image, max_width, max_height):
-        original_width, original_height = image.size
-        ratio = min(max_width / original_width, max_height / original_height)
-        new_width = int(original_width * ratio)
-        new_height = int(original_height * ratio)
-        return image.resize((new_width, new_height))
-
-    def on_focus_in(self, event):
-        self.syncronized_windows[1].window.lift(self.window)  # hand
-        self.syncronized_windows[0].window.lift(self.window)  # memo
-
-    def mouse_double_click(self, event):
-        # メニューモードへの切り替え
-        # TODO: アニメーション処理（反応）
-        self.notify_observers(Event.START_MENU_MODE)
-
-    def update(self, event):
-        super().update(event)
+        self.canvas.create_image(new_width // 2, new_height // 2, image=self.hand_image, anchor=tk.CENTER)
 
     def make_background_fully_transparent(self, image, color, tolerance):
         image = image.convert("RGBA")

@@ -18,6 +18,9 @@ class MemoWindow(WindowBase):
         self.auto_save_interval = 5000  # 自動保存の間隔（ミリ秒）
         super().__init__(root, "メモウィンドウ", 250, 250, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
 
+    def on_focus_in(self, event):
+        self.syncronized_windows[0].window.lift(self.window)
+
     def setup_window(self):
         # 外側に黒色のフレームを追加（角を丸くしない）
         self.outer_frame = ctk.CTkFrame(self.window, fg_color="#000000", corner_radius=0)
