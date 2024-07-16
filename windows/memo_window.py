@@ -14,7 +14,7 @@ class MemoWindow(WindowBase):
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.topmost_flag = True
-        self.file_path = "data/text.txt"
+        self.file_path = "data/memo.txt"
         self.auto_save_interval = 5000  # 自動保存の間隔（ミリ秒）
         super().__init__(root, "メモウィンドウ", 250, 250, x_pos, y_pos, syncronized_windows=[], topmost_flag=True)
 
