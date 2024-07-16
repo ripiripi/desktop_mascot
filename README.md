@@ -36,5 +36,5 @@
 - **Transparency**: Right-click the character to make it semi-transparent.
 
 ## About "Tech-chan"
-- "Tech-chan" is the official mascot character of the Koudaisai festival, created in 2011. It is used as the character displayed in this application.
+- "Tech-chan" is the official mascot character of Tokyo Tech Festival, created in 2011. It is used as the character displayed in this application.
 - The copyright of "Tech-chan" belongs to Tokyo Tech Festival executive committee and the original designer, Hida.
