@@ -83,9 +83,6 @@ class CharacterWindow(WindowBase):
 
     def update(self, event):
         super().update(event)
-        if event == Event.SETWINDOWORDER:
-            print("ok")
-            self.on_focus_in(None)
 
     def make_background_fully_transparent(self, image, color, tolerance):
         image = image.convert("RGBA")

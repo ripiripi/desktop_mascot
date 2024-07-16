@@ -212,7 +212,7 @@ class BubbleWindow(WindowBase):
 
     def update_sns_posts_async(self):
         if self.is_sns_mode is True and self.stop_post_update is False and self.isLogined:
-            self.update_sns_timer = threading.Timer(6, self.fetch_and_update_sns_posts)
+            self.update_sns_timer = threading.Timer(15, self.fetch_and_update_sns_posts)
             self.update_sns_timer.start()
 
     def fetch_and_update_sns_posts(self):
@@ -343,10 +343,10 @@ class BubbleWindow(WindowBase):
             self.window.after(3000, self.hide_balloon)
 
     def hide_balloon(self):
-        self.window.withdraw()  # バルーンを非表示にする
+        self.window.wm_attributes("-alpha", 0.0)  # withdraw()  # バルーンを非表示にする
 
     def show_balloon(self):
-        self.window.deiconify()  # バルーンを再表示する
+        self.window.wm_attributes("-alpha", 1.0)  # .deiconify()  # バルーンを再表示する
 
     def handle_option1_pre(self):
         # オプション1の処理
@@ -453,8 +453,8 @@ class BubbleWindow(WindowBase):
         self.hide_balloon()
         self.stop_post_update = False
         self.fetch_and_update_sns_posts()
+
         self.show_balloon()  # バルーンを再表示する
-        self.notify_observers(Event.SETWINDOWORDER)
 
     def on_label_enter(self, event, label):
         label = event.widget
