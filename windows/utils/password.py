@@ -5,13 +5,13 @@ import json
 # キーの生成と保存（初回のみ実行）
 def generate_key():
     key = Fernet.generate_key()
-    with open("secret.key", "wb") as key_file:
+    with open("data/secret.key", "wb") as key_file:
         key_file.write(key)
 
 
 # キーの読み込み
 def load_key():
-    return open("secret.key", "rb").read()
+    return open("data/secret.key", "rb").read()
 
 
 # パスワードの暗号化
@@ -34,13 +34,13 @@ def decrypt_password(encrypted_password):
 def save_credentials(username, password):
     encrypted_password = encrypt_password(password)
     credentials = {"username": username, "password": encrypted_password.decode()}
-    with open("credentials.json", "w") as file:
+    with open("data/credentials.json", "w") as file:
         json.dump(credentials, file)
 
 
 # ユーザー名とパスワードの読み込み
 def load_credentials():
-    with open("credentials.json", "r") as file:
+    with open("data/credentials.json", "r") as file:
         credentials = json.load(file)
         username = credentials["username"]
         encrypted_password = credentials["password"].encode()

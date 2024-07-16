@@ -1,4 +1,3 @@
 **/__pycache__/**
-secret.key
-credentials.json
-assets/text.txt
+data/secret.key
+data/credentials.json
