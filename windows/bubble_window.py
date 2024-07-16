@@ -22,6 +22,7 @@ class BubbleWindow(WindowBase):
         self.current_alpha = 1.0  # 透明度
         self.hovering = False
         self.stop_post_update = False
+        self.is_sns_mode = True
         self.isLogined = False
         self.update_sns_timer = threading.Timer(6, self.fetch_and_update_sns_posts)
 
@@ -52,7 +53,7 @@ class BubbleWindow(WindowBase):
         self.canvas.pack()
 
         # 初回のみキー生成
-        if not os.path.exists("secret.key"):
+        if not os.path.exists("data/secret.key"):
             generate_key()
         self.bluesky_login()
 
@@ -137,7 +138,7 @@ class BubbleWindow(WindowBase):
 
     def bluesky_login(self):
 
-        if not os.path.exists("credentials.json"):
+        if not os.path.exists("data/credentials.json"):
             return
 
         loaded_username, loaded_password = load_credentials()
@@ -152,7 +153,7 @@ class BubbleWindow(WindowBase):
             self.isLogined = False
 
     def update_sns_posts(self):
-        if self.stop_post_update or self.isLogined is False:
+        if self.is_sns_mode is False or self.stop_post_update or self.isLogined is False:
             return
 
         self.canvas.delete("all")
@@ -162,7 +163,7 @@ class BubbleWindow(WindowBase):
         print("response_len", len(response.feed))
         post = response.feed[rand_int].post
 
-        if self.stop_post_update:
+        if self.is_sns_mode is False or self.stop_post_update:
             return
 
         post_text, image_url = extract_post_content(post)
@@ -210,7 +211,7 @@ class BubbleWindow(WindowBase):
         self.set_balloons()
 
     def update_sns_posts_async(self):
-        if not self.stop_post_update and self.isLogined:
+        if self.is_sns_mode is True and self.stop_post_update is False and self.isLogined:
             self.update_sns_timer = threading.Timer(6, self.fetch_and_update_sns_posts)
             self.update_sns_timer.start()
 
@@ -256,8 +257,8 @@ class BubbleWindow(WindowBase):
                 cursor="hand2",
             )
             label.bind("<Button-1>", lambda event, opt=option: self.option_selected(opt))
-            label.bind("<Enter>", self.on_label_enter)
-            label.bind("<Leave>", self.on_label_leave)
+            label.bind("<Enter>", lambda event, label=label: self.on_label_enter(event=event, label=label))
+            label.bind("<Leave>", lambda event, label=label: self.on_label_leave(event=event, label=label))
             label.original_font = label.cget("font")  # 元のフォントを保存
             self.canvas.create_window(10, label_height + 10, anchor="nw", window=label)
             label_height += label.winfo_reqheight() + 10
@@ -296,7 +297,7 @@ class BubbleWindow(WindowBase):
         self.canvas.create_window(80, 70, anchor="nw", window=pw_entry)
 
         # ログイン情報がある場合は読み込んで入力フォームに表示
-        if os.path.exists("credentials.json"):
+        if os.path.exists("data/credentials.json"):
             loaded_username, loaded_password = load_credentials()
             id_entry.insert(0, loaded_username)
             pw_entry.insert(0, loaded_password)
@@ -347,10 +348,55 @@ class BubbleWindow(WindowBase):
     def show_balloon(self):
         self.window.deiconify()  # バルーンを再表示する
 
-    def handle_option1(self):
+    def handle_option1_pre(self):
         # オプション1の処理
         print("オプション1が選択されました")
         self.display_login_form()
+
+    def handle_option1(self):
+        self.canvas.delete("all")
+        print("オプション1が選択されました")
+
+        # 「ログイン」オプション
+        login_label = tk.Label(self.canvas, text="ログイン", font=self.font, bg=self.balloon_color)
+        login_label.bind("<Button-1>", lambda event: self.display_login_form())
+        login_label.bind(
+            "<Enter>", lambda event, label=login_label: self.on_label_enter(event=event, label=label)
+        )  # label.bind("<Enter>", lambda event, label=label: self.on_label_enter(event=event, label=label))
+        login_label.bind("<Leave>", lambda event, label=login_label: self.on_label_leave(event=event, label=label))
+        login_label.original_font = login_label.cget("font")  # 元のフォントを保存
+        self.canvas.create_window(10, 10, anchor="nw", window=login_label)
+
+        # 「SNS投稿表示の有無」オプション
+        print("stop_post_update in display", self.is_sns_mode)
+        display_status = "表示" if self.is_sns_mode else "非表示"
+        sns_display_label = tk.Label(
+            self.canvas,
+            text=f"SNS投稿表示の有無 (現在：{display_status})",
+            font=self.font,
+            bg=self.balloon_color,
+        )
+        sns_display_label.bind("<Button-1>", lambda event: self.toggle_sns_display())
+        sns_display_label.bind(
+            "<Enter>", lambda event, label=sns_display_label: self.on_label_enter(event=event, label=label)
+        )
+        sns_display_label.bind(
+            "<Leave>", lambda event, label=sns_display_label: self.on_label_leave(event=event, label=label)
+        )
+        sns_display_label.original_font = sns_display_label.cget("font")  # 元のフォントを保存
+
+        self.canvas.create_window(10, 50, anchor="nw", window=sns_display_label)
+
+        self.window_height = 100
+        self.root.geometry(f"{self.window_width}x{self.window_height}")
+        self.set_balloons()
+
+    def toggle_sns_display(self):
+        print("toggled")
+        self.is_sns_mode = not self.is_sns_mode
+        if self.stop_post_update is True:
+            self.stop_update_sns_posts()
+        self.display_aaa_and_return_to_sns()
 
     def handle_option2(self):
         # オプション2の処理
@@ -371,10 +417,12 @@ class BubbleWindow(WindowBase):
         self.window.geometry(f"{self.window_width}x{self.window_height}")
         self.set_balloons()
 
-        if self.isLogined is True:
+        if self.isLogined is True and self.is_sns_mode is True:
             # 2秒後にバルーンを一時的に非表示にしてSNS投稿表示モードに戻る
+            print(11)
             self.window.after(4000, self.return_to_sns_mode)
         else:
+            print(22)
             self.window.after(4000, self.hide_balloon)
 
     def display_goodbye_and_exit(self):
@@ -393,17 +441,18 @@ class BubbleWindow(WindowBase):
         self.root.quit()  # アプリケーションを終了する
 
     def return_to_sns_mode(self):
+        print(33)
         self.hide_balloon()
         self.stop_post_update = False
         self.fetch_and_update_sns_posts()
         self.show_balloon()  # バルーンを再表示する
 
-    def on_label_enter(self, event):
+    def on_label_enter(self, event, label):
         label = event.widget
         label.config(bg="#d1e7e7")
         # self.animate_label(label, 1.1)
 
-    def on_label_leave(self, event):
+    def on_label_leave(self, event, label):
         label = event.widget
         label.config(bg=self.balloon_color)
         label.config(font=label.original_font)  # 元のフォントに戻す

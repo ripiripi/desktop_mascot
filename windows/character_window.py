@@ -108,7 +108,6 @@ class CharacterWindow(WindowBase):
         return image
 
     def mabataki(self):
-        print("mabataki")
         # 一定確率でまばたきを行う
         if random.random() < 0.45:
             self.start_blinking()
