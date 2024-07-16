@@ -83,6 +83,9 @@ class CharacterWindow(WindowBase):
 
     def update(self, event):
         super().update(event)
+        if event == Event.SETWINDOWORDER:
+            print("ok")
+            self.on_focus_in(None)
 
     def make_background_fully_transparent(self, image, color, tolerance):
         image = image.convert("RGBA")
@@ -108,7 +111,6 @@ class CharacterWindow(WindowBase):
         return image
 
     def mabataki(self):
-        print("mabataki")
         # 一定確率でまばたきを行う
         if random.random() < 0.45:
             self.start_blinking()
