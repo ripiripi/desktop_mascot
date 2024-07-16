@@ -5,7 +5,7 @@
 
 - **Memo**: Quickly take notes to remember important ideas and tasks.
 - **SNS (Bluesky) Post Display**: The character on your desktop periodically fetches and displays SNS posts. You can toggle the display as needed.
-- **Transparency**: Set the memo and character to be semi-transparent so they do not interfere with your work.
+- **Transparency**: Adjust the transparency of the app to ensure it provides assistance without overwhelming your screen space.
 
 ## System Requirements
 - Supported OS: Windows 10
