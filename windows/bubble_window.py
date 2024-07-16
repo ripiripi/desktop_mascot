@@ -387,7 +387,15 @@ class BubbleWindow(WindowBase):
 
         self.canvas.create_window(10, 50, anchor="nw", window=sns_display_label)
 
-        self.window_height = 100
+        # なんでもないオプション
+        no_label = tk.Label(self.canvas, text="なんでもない", font=self.font, bg=self.balloon_color)
+        no_label.bind("<Button-1>", lambda event: self.handle_option3())
+        no_label.bind("<Enter>", lambda event, label=no_label: self.on_label_enter(event=event, label=label))
+        no_label.bind("<Leave>", lambda event, label=no_label: self.on_label_leave(event=event, label=label))
+        no_label.original_font = sns_display_label.cget("font")  # 元のフォントを保存
+        self.canvas.create_window(10, 90, anchor="nw", window=no_label)
+
+        self.window_height = 120
         self.root.geometry(f"{self.window_width}x{self.window_height}")
         self.set_balloons()
 
@@ -446,6 +454,7 @@ class BubbleWindow(WindowBase):
         self.stop_post_update = False
         self.fetch_and_update_sns_posts()
         self.show_balloon()  # バルーンを再表示する
+        self.notify_observers(Event.SETWINDOWORDER)
 
     def on_label_enter(self, event, label):
         label = event.widget
