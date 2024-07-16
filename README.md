@@ -13,11 +13,9 @@
 
 ## Installation
 
-### Steps
-
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/desktop_mascot.git
+    https://github.com/ripiripi/desktop_mascot.git
     cd desktop_mascot
     ```
 
