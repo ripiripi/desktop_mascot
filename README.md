@@ -29,7 +29,6 @@
 ## Usage
 
 - **Memo**: When you start the application, a memo window appears alongside the character, allowing you to use it immediately. Notes can be edited and deleted, and are automatically saved to a text file.
-    - Example: Take real-time minutes during a meeting or record daily tasks.
 
 - **SNS Post Display**: The mascot automatically fetches and displays random SNS posts periodically. SNS (Bluesky) login information is required for this feature.
 
