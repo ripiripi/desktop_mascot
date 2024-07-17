@@ -38,15 +38,18 @@ class CharacterWindow(WindowBase):
         self.blink_image_paths = ["./assets/image/tekku_1.png", "./assets/image/tekku_2.png"]
         self.load_images()
 
-        # デフォルトの画像を表示
-        self.display_image(self.character_images[0])
+        # 画像キャンバスの初期化
+        self.image_ids = []
+        for image in self.character_images:
+            image_id = self.canvas.create_image(0, 0, image=image, anchor=tk.NW)
+            self.image_ids.append(image_id)
 
-        memo_window.window.lift(self.window)
+        self.current_image_index = 0
+        self.update_image_visibility()
 
-        # スレッドを使ってまばたき処理を開始
-        self.blink_thread = threading.Thread(target=self.mabataki)
-        self.blink_thread.daemon = True
-        self.blink_thread.start()
+        # まばたき処理を開始
+        self.blink_timer = None
+        self.schedule_blink()
 
     def load_images(self):
         # 画像をロードしてリサイズ
@@ -65,9 +68,16 @@ class CharacterWindow(WindowBase):
         resized_image = self.resize_image(image, self.pic_x, self.pic_y)
         return ImageTk.PhotoImage(resized_image)
 
-    def display_image(self, image):
-        self.canvas.config(width=image.width(), height=image.height())
-        self.canvas.create_image(image.width() // 2, image.height() // 2, image=image, anchor=tk.CENTER)
+    def update_image_visibility(self):
+        for index, image_id in enumerate(self.image_ids):
+            if index == self.current_image_index:
+                self.canvas.itemconfig(image_id, state="normal")
+            else:
+                self.canvas.itemconfig(image_id, state="hidden")
+
+    def on_focus_in(self, event):
+        self.syncronized_windows[1].window.lift(self.window)  # hand
+        self.syncronized_windows[0].window.lift(self.window)  # memo
 
     def resize_image(self, image, max_width, max_height):
         original_width, original_height = image.size
@@ -75,10 +85,6 @@ class CharacterWindow(WindowBase):
         new_width = int(original_width * ratio)
         new_height = int(original_height * ratio)
         return image.resize((new_width, new_height))
-
-    def on_focus_in(self, event):
-        self.syncronized_windows[1].window.lift(self.window)  # hand
-        self.syncronized_windows[0].window.lift(self.window)  # memo
 
     def mouse_double_click(self, event):
         # メニューモードへの切り替え
@@ -111,11 +117,11 @@ class CharacterWindow(WindowBase):
 
         return image
 
-    def mabataki(self):
-        while True:
-            if random.random() < 0.45:
-                self.start_blinking()
-            time.sleep(1)  # 1秒待機
+    def schedule_blink(self):
+        # まばたきをスケジュール
+        delay = random.uniform(1, 2)  # 1秒から2秒の間でランダムにスケジュール
+        self.blink_timer = threading.Timer(delay, self.start_blinking)
+        self.blink_timer.start()
 
     def start_blinking(self):
         self.blink_index = 0
@@ -124,10 +130,8 @@ class CharacterWindow(WindowBase):
 
     def blink_images(self):
         if self.blink_index < len(self.blink_sequence):
-            image_index = self.blink_sequence[self.blink_index]
-            self.window.after(
-                0, lambda: self.display_image(self.character_images[image_index])
-            )  # GUI更新はメインスレッドで
+            self.current_image_index = self.blink_sequence[self.blink_index]
+            self.update_image_visibility()
 
             trans_time = 0
             if self.blink_index % 2 == 0:
@@ -139,5 +143,7 @@ class CharacterWindow(WindowBase):
                     trans_time = 0.085
 
             self.blink_index += 1
-            time.sleep(trans_time)  # 指定時間待機
-            self.blink_images()
+            self.blink_timer = threading.Timer(trans_time, self.blink_images)
+            self.blink_timer.start()
+        else:
+            self.schedule_blink()
