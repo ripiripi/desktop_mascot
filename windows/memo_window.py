@@ -1,10 +1,11 @@
 from .base_window import WindowBase
 import tkinter as tk
-from tkinter import ttk
-import customtkinter as ctk
 from tkinter import font
+import customtkinter as ctk
+from tkinter import ttk
 from .enum import Event
 import os
+import re
 
 
 class MemoWindow(WindowBase):
@@ -37,8 +38,10 @@ class MemoWindow(WindowBase):
         bold_font = font.Font(self.text_widget, self.text_widget.cget("font"))
         bold_font.configure(weight="bold")
         self.text_widget.tag_configure("bold", font=bold_font)
+        self.text_widget.tag_configure("checkbox", font=("Meiryo", 15), foreground="green")
 
         self.text_widget.bind("<KeyRelease>", self.decorate_text)
+        self.text_widget.bind("<Button-1>", self.on_click)
 
         self.load_text()
 
@@ -52,16 +55,39 @@ class MemoWindow(WindowBase):
     def decorate_text(self, event):
         content = self.text_widget.get("1.0", tk.END)
         self.text_widget.tag_remove("bold", "1.0", tk.END)
-        start = 1.0
-        while True:
-            start = self.text_widget.search(r"\*\*", start, stopindex=tk.END, regexp=True)
-            if not start:
-                break
-            end = self.text_widget.search(r"\*\*", start + "+2c", stopindex=tk.END, regexp=True)
-            if not end:
-                break
-            self.text_widget.tag_add("bold", start, end + "+2c")
-            start = end + "+2c"
+        self.text_widget.tag_remove("checkbox", "1.0", tk.END)
+
+        self.apply_checkbox(content)  # 先にチェックボックスを適用
+
+    def apply_checkbox(self, content):
+        checkbox_pattern = re.compile(r"^\[ \] (.*)", re.MULTILINE)
+        for match in checkbox_pattern.finditer(content):
+            start, end = match.span(0)
+            self.text_widget.delete(f"1.0+{start}c", f"1.0+{start + 3}c")
+            self.text_widget.insert(f"1.0+{start}c", "☐ ")
+            self.text_widget.tag_add("checkbox", f"1.0+{start}c", f"1.0+{end - 3}c")
+
+        checkbox_checked_pattern = re.compile(r"^\[x\] (.*)", re.MULTILINE)
+        for match in checkbox_checked_pattern.finditer(content):
+            start, end = match.span(0)
+            self.text_widget.delete(f"1.0+{start}c", f"1.0+{start + 3}c")
+            self.text_widget.insert(f"1.0+{start}c", "☑ ")
+            self.text_widget.tag_add("checkbox", f"1.0+{start}c", f"1.0+{end - 3}c")
+
+    def on_click(self, event):
+        index = self.text_widget.index(f"@{event.x},{event.y}")
+        line_start = f"{index.split('.')[0]}.0"
+        line_end = f"{index.split('.')[0]}.end"
+        line_text = self.text_widget.get(line_start, line_end)
+
+        if line_text.startswith("☐ "):
+            self.toggle_checkbox(line_start, "☐ ", "☑ ")
+        elif line_text.startswith("☑ "):
+            self.toggle_checkbox(line_start, "☑ ", "☐ ")
+
+    def toggle_checkbox(self, line_start, old_symbol, new_symbol):
+        self.text_widget.delete(line_start, f"{line_start}+2c")
+        self.text_widget.insert(line_start, new_symbol)
 
     def mouse_move(self, event):
         pass
