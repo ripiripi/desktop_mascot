@@ -17,8 +17,9 @@ class BubbleWindow(WindowBase):
         self.window_width = self.window_width_default + 30  # 30 is for padding
         self.window_height_default = 100
         self.window_height = 100
-        self.balloon_color = "#EFFBFB"
+        self.balloon_color = "#141f27"  # "#EFFBFB"
         self.font = tkfont.Font(family="San Francisco", size=10)  # ("San Francisco", 12)  # ("Helvetica Neue", 12)  #
+        self.font_color = "white"
         # self.current_alpha = 1.0  # 透明度
         self.hovering = False
         self.stop_post_update = False
@@ -190,6 +191,7 @@ class BubbleWindow(WindowBase):
                 justify="left",
                 bg=self.balloon_color,
                 font=self.font,
+                fg=self.font_color,
             )
             self.canvas.update_idletasks()  # レイアウトを確定
 
@@ -229,7 +231,9 @@ class BubbleWindow(WindowBase):
     def display_image(self):
         if hasattr(self, "image") and self.image:
             self.photo_image = ImageTk.PhotoImage(self.image)
-            image_label = tk.Label(self.canvas, image=self.photo_image, bg=self.balloon_color)
+            image_label = tk.Label(
+                self.canvas, image=self.photo_image, bg=self.balloon_color, foreground=self.font_color
+            )
             self.canvas.create_window(5, self.label_height + 20, window=image_label, anchor="nw", tags="post_image")
 
     def update_sns_posts_async(self):
@@ -277,6 +281,7 @@ class BubbleWindow(WindowBase):
                 anchor="nw",
                 justify="left",
                 cursor="hand2",
+                foreground=self.font_color,
             )
             label.bind("<Button-1>", lambda event, opt=option: self.option_selected(opt))
             label.bind("<Enter>", lambda event, label=label: self.on_label_enter(event=event, label=label))
@@ -303,17 +308,19 @@ class BubbleWindow(WindowBase):
         self.canvas.delete("all")
 
         # 説明ラベルを作成
-        label = tk.Label(self.canvas, text="IDとパスワードを入力してね", font=self.font, bg=self.balloon_color)
+        label = tk.Label(
+            self.canvas, text="IDとパスワードを入力してね", font=self.font, bg=self.balloon_color, fg=self.font_color
+        )
         self.canvas.create_window(10, 10, anchor="nw", window=label)
 
         # ID入力フォーム
-        id_label = tk.Label(self.canvas, text="ID:", font=self.font, bg=self.balloon_color)
+        id_label = tk.Label(self.canvas, text="ID:", font=self.font, bg=self.balloon_color, fg=self.font_color)
         self.canvas.create_window(10, 40, anchor="nw", window=id_label)
         id_entry = tk.Entry(self.canvas, font=self.font)
         self.canvas.create_window(80, 40, anchor="nw", window=id_entry)
 
         # パスワード入力フォーム
-        pw_label = tk.Label(self.canvas, text="パスワード:", font=self.font, bg=self.balloon_color)
+        pw_label = tk.Label(self.canvas, text="パスワード:", font=self.font, bg=self.balloon_color, fg=self.font_color)
         self.canvas.create_window(10, 70, anchor="nw", window=pw_label)
         pw_entry = tk.Entry(self.canvas, font=self.font, show="*")
         self.canvas.create_window(80, 70, anchor="nw", window=pw_entry)
@@ -351,7 +358,7 @@ class BubbleWindow(WindowBase):
 
     def display_login_result(self, message):
         self.canvas.delete("all")
-        label = tk.Label(self.canvas, text=message, font=self.font, bg=self.balloon_color)
+        label = tk.Label(self.canvas, text=message, font=self.font, bg=self.balloon_color, fg=self.font_color)
         self.canvas.create_window(10, 10, anchor="nw", window=label)
 
         self.window_height = 50
@@ -382,7 +389,7 @@ class BubbleWindow(WindowBase):
         print("オプション1が選択されました")
 
         # 「ログイン」オプション
-        login_label = tk.Label(self.canvas, text="ログイン", font=self.font, bg=self.balloon_color)
+        login_label = tk.Label(self.canvas, text="ログイン", font=self.font, bg=self.balloon_color, fg=self.font_color)
         login_label.bind("<Button-1>", lambda event: self.display_login_form())
         login_label.bind(
             "<Enter>", lambda event, label=login_label: self.on_label_enter(event=event, label=label)
@@ -399,6 +406,7 @@ class BubbleWindow(WindowBase):
             text=f"SNS投稿表示の有無 (現在：{display_status})",
             font=self.font,
             bg=self.balloon_color,
+            fg=self.font_color,
         )
         sns_display_label.bind("<Button-1>", lambda event: self.toggle_sns_display())
         sns_display_label.bind(
@@ -412,7 +420,7 @@ class BubbleWindow(WindowBase):
         self.canvas.create_window(10, 50, anchor="nw", window=sns_display_label)
 
         # なんでもないオプション
-        no_label = tk.Label(self.canvas, text="なんでもない", font=self.font, bg=self.balloon_color)
+        no_label = tk.Label(self.canvas, text="なんでもない", font=self.font, bg=self.balloon_color, fg=self.font_color)
         no_label.bind("<Button-1>", lambda event: self.handle_option3())
         no_label.bind("<Enter>", lambda event, label=no_label: self.on_label_enter(event=event, label=label))
         no_label.bind("<Leave>", lambda event, label=no_label: self.on_label_leave(event=event, label=label))
@@ -442,7 +450,7 @@ class BubbleWindow(WindowBase):
 
     def display_aaa_and_return_to_sns(self):
         self.canvas.delete("all")
-        label = tk.Label(self.canvas, text="おっけー", font=self.font, bg=self.balloon_color)
+        label = tk.Label(self.canvas, text="おっけー", font=self.font, bg=self.balloon_color, fg=self.font_color)
         self.canvas.create_window(10, 10, anchor="nw", window=label, tags="all")
 
         self.window_height = label.winfo_reqheight() + 20
@@ -459,7 +467,7 @@ class BubbleWindow(WindowBase):
 
     def display_goodbye_and_exit(self):
         self.canvas.delete("all")
-        label = tk.Label(self.canvas, text="じゃあね！", font=self.font, bg=self.balloon_color)
+        label = tk.Label(self.canvas, text="じゃあね！", font=self.font, bg=self.balloon_color, fg=self.font_color)
         self.canvas.create_window(10, 10, anchor="nw", window=label)
 
         self.window_height = label.winfo_reqheight() + 20
