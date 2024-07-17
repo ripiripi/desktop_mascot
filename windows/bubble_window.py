@@ -173,14 +173,16 @@ class BubbleWindow(WindowBase):
         self.canvas.delete("post_text")
         self.canvas.delete("post_image")
 
-        image_height = 0
+        self.image_height = 0
+        self.image = None
         if image_url:
-            image = fetch_image(image_url, max_width=self.window_width - 50, max_height=330)
+            self.image = fetch_image(image_url, max_width=self.window_width - 50, max_height=330)
+            self.image_height = self.image.height
 
-        label_height = 0
+        self.label_height = 0
         if post_text.strip():
             # ラベルを作成して追加
-            label = tk.Message(
+            self.post_label = tk.Message(
                 self.canvas,
                 text=post_text,
                 width=self.window_width - 50,
@@ -191,28 +193,48 @@ class BubbleWindow(WindowBase):
             )
             self.canvas.update_idletasks()  # レイアウトを確定
 
-            self.canvas.create_window(5, 10, window=label, anchor="nw", tags="post_text")
+            self.canvas.create_window(5, 10, window=self.post_label, anchor="nw", tags="post_text")
 
-            label_height = label.winfo_reqheight()
+            self.label_height = self.post_label.winfo_reqheight()
+            self.current_text_index = 0
+            self.full_text = post_text
+            self.update_text_incrementally()  # 文字を逐次的に表示する
+        elif self.image is not None:
+            self.display_image()
 
         # 画像がある場合は画像を取得して表示
-        if image_url and image:
-            self.photo_image = ImageTk.PhotoImage(image)
-            image_label = tk.Label(self.canvas, image=self.photo_image, bg=self.balloon_color)
-            self.canvas.create_window(5, label_height + 20, window=image_label, anchor="nw", tags="post_image")
-            image_height = image.height
+        # if image_url and image:
+        ##    self.photo_image = ImageTk.PhotoImage(image)
+        #    image_label = tk.Label(self.canvas, image=self.photo_image, bg=self.balloon_color)
+        ##    self.canvas.create_window(5, label_height + 20, window=image_label, anchor="nw", tags="post_image")
+        #    image_height = image.height
 
         # バルーンの高さを調整し、再描画
-        if image_height == 0:
-            self.window_height = label_height + image_height + 20  # 画像がある場合はその高さも考慮
+        if self.image_height == 0:
+            self.window_height = self.label_height + self.image_height + 20  # 画像がある場合はその高さも考慮
         else:
-            self.window_height = label_height + image_height + 30
+            self.window_height = self.label_height + self.image_height + 30
 
         self.set_balloons()
 
+    def update_text_incrementally(self):
+        if self.current_text_index < len(self.full_text):
+            self.post_label.config(text=self.full_text[: self.current_text_index + 1])
+            self.current_text_index += 1
+            self.canvas.after(50, self.update_text_incrementally)  # 50ミリ秒毎に次の文字を表示
+        else:
+            print("display_image")
+            self.display_image()  # 文字の表示が完了したら画像を表示
+
+    def display_image(self):
+        if hasattr(self, "image") and self.image:
+            self.photo_image = ImageTk.PhotoImage(self.image)
+            image_label = tk.Label(self.canvas, image=self.photo_image, bg=self.balloon_color)
+            self.canvas.create_window(5, self.label_height + 20, window=image_label, anchor="nw", tags="post_image")
+
     def update_sns_posts_async(self):
         if self.is_sns_mode is True and self.stop_post_update is False and self.isLogined:
-            self.update_sns_timer = threading.Timer(15, self.fetch_and_update_sns_posts)
+            self.update_sns_timer = threading.Timer(20, self.fetch_and_update_sns_posts)
             self.update_sns_timer.start()
 
     def fetch_and_update_sns_posts(self):
