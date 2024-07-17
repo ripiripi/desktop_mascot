@@ -10,7 +10,7 @@ import os
 class MemoWindow(WindowBase):
     def __init__(self, root, x_pos, y_pos):
         self.width = 250
-        self.height = 250
+        self.height = 230
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.topmost_flag = True

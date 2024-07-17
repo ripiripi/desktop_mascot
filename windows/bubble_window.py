@@ -17,9 +17,9 @@ class BubbleWindow(WindowBase):
         self.window_width = self.window_width_default + 30  # 30 is for padding
         self.window_height_default = 100
         self.window_height = 100
-        self.balloon_color = "#141f27"  # "#EFFBFB"
+        self.balloon_color = "#EFFBFB"  # "#141f27"  # "#EFFBFB"
         self.font = tkfont.Font(family="San Francisco", size=10)  # ("San Francisco", 12)  # ("Helvetica Neue", 12)  #
-        self.font_color = "white"
+        self.font_color = "black"
         # self.current_alpha = 1.0  # 透明度
         self.hovering = False
         self.stop_post_update = False
