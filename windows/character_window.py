@@ -3,6 +3,8 @@ from .enum import Event
 import tkinter as tk
 from PIL import Image, ImageTk
 import random
+import threading
+import time
 
 
 class CharacterWindow(WindowBase):
@@ -41,8 +43,10 @@ class CharacterWindow(WindowBase):
 
         memo_window.window.lift(self.window)
 
-        # 一秒ごとにmabatakiメソッドを呼び出す
-        self.window.after(1000, self.mabataki)
+        # スレッドを使ってまばたき処理を開始
+        self.blink_thread = threading.Thread(target=self.mabataki)
+        self.blink_thread.daemon = True
+        self.blink_thread.start()
 
     def load_images(self):
         # 画像をロードしてリサイズ
@@ -108,12 +112,10 @@ class CharacterWindow(WindowBase):
         return image
 
     def mabataki(self):
-        # 一定確率でまばたきを行う
-        if random.random() < 0.45:
-            self.start_blinking()
-
-        # 次の呼び出しを1秒後に設定
-        self.window.after(1000, self.mabataki)
+        while True:
+            if random.random() < 0.45:
+                self.start_blinking()
+            time.sleep(1)  # 1秒待機
 
     def start_blinking(self):
         self.blink_index = 0
@@ -123,17 +125,19 @@ class CharacterWindow(WindowBase):
     def blink_images(self):
         if self.blink_index < len(self.blink_sequence):
             image_index = self.blink_sequence[self.blink_index]
-            self.display_image(self.character_images[image_index])
+            self.window.after(
+                0, lambda: self.display_image(self.character_images[image_index])
+            )  # GUI更新はメインスレッドで
 
             trans_time = 0
             if self.blink_index % 2 == 0:
-                trans_time = 40
-                self.window.after(trans_time, self.blink_images)
+                trans_time = 0.04
             else:
                 if self.blink_index == 3:
-                    trans_time = 30
-                    self.window.after(25, self.blink_images)
+                    trans_time = 0.03
                 else:
-                    trans_time = 85
-                    self.window.after(80, self.blink_images)
+                    trans_time = 0.085
+
             self.blink_index += 1
+            time.sleep(trans_time)  # 指定時間待機
+            self.blink_images()
