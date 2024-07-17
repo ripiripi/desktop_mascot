@@ -376,7 +376,10 @@ class BubbleWindow(WindowBase):
         self.current_alpha = 0.0
 
     def show_balloon(self):
-        self.window.wm_attributes("-alpha", 1.0)  # .deiconify()  # バルーンを再表示する
+        if self.translucent:
+            self.window.wm_attributes("-alpha", 0.5)
+        else:
+            self.window.wm_attributes("-alpha", 1.0)
         self.current_alpha = 1.0
 
     def handle_option1_pre(self):
