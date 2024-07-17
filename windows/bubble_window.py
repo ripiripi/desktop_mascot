@@ -19,7 +19,7 @@ class BubbleWindow(WindowBase):
         self.window_height = 100
         self.balloon_color = "#EFFBFB"
         self.font = tkfont.Font(family="San Francisco", size=10)  # ("San Francisco", 12)  # ("Helvetica Neue", 12)  #
-        self.current_alpha = 1.0  # 透明度
+        # self.current_alpha = 1.0  # 透明度
         self.hovering = False
         self.stop_post_update = False
         self.is_sns_mode = True
@@ -366,9 +366,11 @@ class BubbleWindow(WindowBase):
 
     def hide_balloon(self):
         self.window.wm_attributes("-alpha", 0.0)  # withdraw()  # バルーンを非表示にする
+        self.current_alpha = 0.0
 
     def show_balloon(self):
         self.window.wm_attributes("-alpha", 1.0)  # .deiconify()  # バルーンを再表示する
+        self.current_alpha = 1.0
 
     def handle_option1_pre(self):
         # オプション1の処理

@@ -13,6 +13,7 @@ class WindowBase(ABC):
         self.window.overrideredirect(True)
         self.observers = []
         self.translucent = False
+        self.current_alpha = 1.0
 
         # 位置移動を同期させるウィンドウ
         self.syncronized_windows: list[WindowBase] = syncronized_windows
@@ -61,11 +62,15 @@ class WindowBase(ABC):
         self.turn_translucent()
 
     def turn_translucent(self):
+        if self.current_alpha == 0:  # 透明度が0の場合は何もしない
+            return
         if self.translucent:
             self.window.attributes("-alpha", 1.0)
+            self.current_alpha = 1.0
             self.translucent = False
         else:
             self.window.attributes("-alpha", 0.5)
+            self.current_alpha = 0.5
             self.translucent = True
 
     def on_mouse_enter(self, event):
