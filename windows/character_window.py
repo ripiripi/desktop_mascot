@@ -63,7 +63,7 @@ class CharacterWindow(WindowBase):
 
     def prepare_image(self, image):
         # 背景を透明に変換
-        image = self.make_background_fully_transparent(image, (255, 0, 0), tolerance=15)
+        image = self.make_background_fully_transparent(image, (255, 0, 0), tolerance=35)
         # 画像の比率を保ったままリサイズ
         resized_image = self.resize_image(image, self.pic_x, self.pic_y)
         return ImageTk.PhotoImage(resized_image)
