@@ -25,7 +25,8 @@ class BubbleWindow(WindowBase):
         self.stop_post_update = False
         self.is_sns_mode = True
         self.isLogined = False
-        self.update_sns_timer = threading.Timer(6, self.fetch_and_update_sns_posts)
+        self.post_interval = 30
+        self.update_sns_timer = threading.Timer(self.post_interval, self.fetch_and_update_sns_posts)
 
         super().__init__(
             root,
@@ -238,7 +239,7 @@ class BubbleWindow(WindowBase):
 
     def update_sns_posts_async(self):
         if self.is_sns_mode is True and self.stop_post_update is False and self.isLogined:
-            self.update_sns_timer = threading.Timer(20, self.fetch_and_update_sns_posts)
+            self.update_sns_timer = threading.Timer(self.post_interval, self.fetch_and_update_sns_posts)
             self.update_sns_timer.start()
 
     def fetch_and_update_sns_posts(self):

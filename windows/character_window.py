@@ -119,7 +119,15 @@ class CharacterWindow(WindowBase):
 
     def schedule_blink(self):
         # まばたきをスケジュール
-        delay = random.uniform(1, 2)  # 1秒から2秒の間でランダムにスケジュール
+        # 値とその対応する確率を定義します
+        values = [1, 2, 3, 4, 5]
+        probabilities = [0.45, 0.25, 0.2, 0.08, 0.02]
+
+        # ランダムに選択します
+        delay = random.choices(values, probabilities)[0]
+        print("delay", delay)
+
+        # delay = random.uniform(0.9, 2.5)  # 1秒から2秒の間でランダムにスケジュール
         self.blink_timer = threading.Timer(delay, self.start_blinking)
         self.blink_timer.start()
 
@@ -140,7 +148,7 @@ class CharacterWindow(WindowBase):
                 if self.blink_index == 3:
                     trans_time = 0.03
                 else:
-                    trans_time = 0.085
+                    trans_time = 0.08
 
             self.blink_index += 1
             self.blink_timer = threading.Timer(trans_time, self.blink_images)
