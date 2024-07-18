@@ -125,7 +125,6 @@ class CharacterWindow(WindowBase):
 
         # ランダムに選択します
         delay = random.choices(values, probabilities)[0]
-        print("delay", delay)
 
         # delay = random.uniform(0.9, 2.5)  # 1秒から2秒の間でランダムにスケジュール
         self.blink_timer = threading.Timer(delay, self.start_blinking)
@@ -134,6 +133,7 @@ class CharacterWindow(WindowBase):
     def start_blinking(self):
         self.blink_index = 0
         self.blink_sequence = [0, 1, 2, 1, 0]
+        self.blink_time = [0.08, 0.06, 0.05, 0.06, 0.08]
         self.blink_images()
 
     def blink_images(self):
@@ -141,14 +141,7 @@ class CharacterWindow(WindowBase):
             self.current_image_index = self.blink_sequence[self.blink_index]
             self.update_image_visibility()
 
-            trans_time = 0
-            if self.blink_index % 2 == 0:
-                trans_time = 0.04
-            else:
-                if self.blink_index == 3:
-                    trans_time = 0.03
-                else:
-                    trans_time = 0.08
+            trans_time = self.blink_time[self.blink_index]
 
             self.blink_index += 1
             self.blink_timer = threading.Timer(trans_time, self.blink_images)

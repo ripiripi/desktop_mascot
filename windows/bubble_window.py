@@ -205,13 +205,6 @@ class BubbleWindow(WindowBase):
         elif self.image is not None:
             self.display_image()
 
-        # 画像がある場合は画像を取得して表示
-        # if image_url and image:
-        ##    self.photo_image = ImageTk.PhotoImage(image)
-        #    image_label = tk.Label(self.canvas, image=self.photo_image, bg=self.balloon_color)
-        ##    self.canvas.create_window(5, label_height + 20, window=image_label, anchor="nw", tags="post_image")
-        #    image_height = image.height
-
         # バルーンの高さを調整し、再描画
         if self.image_height == 0:
             self.window_height = self.label_height + self.image_height + 20  # 画像がある場合はその高さも考慮
@@ -267,7 +260,7 @@ class BubbleWindow(WindowBase):
         )
         self.canvas.pack()
         # キャンバスのすべての要素を削除
-        # self.canvas.delete("all")
+        self.canvas.delete("all")
 
         # メニューとして表示するオプション
         options = ["SNS (Bluesky)の設定をする", "さようなら", "なんでもない"]
@@ -470,6 +463,7 @@ class BubbleWindow(WindowBase):
             self.window.after(4000, self.hide_balloon)
 
     def display_goodbye_and_exit(self):
+        self.stop_update_sns_posts()
         self.canvas.delete("all")
         label = tk.Label(self.canvas, text="じゃあね！", font=self.font, bg=self.balloon_color, fg=self.font_color)
         self.canvas.create_window(10, 10, anchor="nw", window=label)
