@@ -400,7 +400,7 @@ class BubbleWindow(WindowBase):
         display_status = "表示" if self.is_sns_mode else "非表示"
         sns_display_label = tk.Label(
             self.canvas,
-            text=f"SNS投稿表示の有無 (現在：{display_status})",
+            text=f"SNS投稿表示の切り替え (現在：{display_status})",
             font=self.font,
             bg=self.balloon_color,
             fg=self.font_color,
@@ -476,7 +476,9 @@ class BubbleWindow(WindowBase):
         self.window.after(2000, self.exit_application)
 
     def exit_application(self):
-        self.root.quit()  # アプリケーションを終了する
+        self.update_sns_timer.join()
+        self.root.destroy()  # ウィンドウを閉じる
+        # self.root.quit()  # アプリケーションを終了する
 
     def return_to_sns_mode(self):
         print(33)
