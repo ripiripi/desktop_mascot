@@ -1,5 +1,5 @@
 # desktop_mascot
-<img src="https://github.com/user-attachments/assets/264fbc24-ef6d-4db1-9cb6-654800a49218" width="330" alt="Demo GIF">
+<img src="https://github.com/user-attachments/assets/a19a4042-7e38-429e-b5bd-1141f385be3c" width="400" alt="Demo GIF">
 
 
 ## Features
