@@ -157,11 +157,17 @@ class CharacterWindow(WindowBase):
 
         self.lift_windows()
 
+    def check_transparency(self):
+        for window in self.syncronized_windows:
+            if window.translucent != self.translucent:
+                window.turn_translucent()
+
     def start_blinking(self):
         print("start_blinking")
         print(len(self.syncronized_windows))
         print(len(self.relative_pos))
         self.check_relative_positions()
+        self.check_transparency()
 
         self.blink_index = 0
         self.blink_sequence = [0, 1, 2, 1, 0]
