@@ -108,33 +108,27 @@ class CharacterWindow(WindowBase):
 
         new_data = []
         for item in datas:
-            # 指定した色に近い場合に完全に透明に変換
             if all(abs(item[i] - color[i]) <= tolerance for i in range(3)):
-                new_data.append((255, 255, 255, 0))  # 完全に透明に変換
+                new_data.append((255, 255, 255, 0))
             else:
                 new_data.append(item)
 
         image.putdata(new_data)
 
-        # 半透明部分を完全に透明に変換
         for y in range(image.height):
             for x in range(image.width):
                 r, g, b, a = image.getpixel((x, y))
-                if a != 255:  # 半透明ピクセル
+                if a != 255:
                     image.putpixel((x, y), (r, g, b, 0))
 
         return image
 
     def schedule_blink(self):
-        # まばたきをスケジュール
-        # 値とその対応する確率を定義します
         values = [1, 2, 3, 4, 5]
         probabilities = [0.45, 0.25, 0.2, 0.08, 0.02]
 
-        # ランダムに選択します
         delay = random.choices(values, probabilities)[0]
 
-        # delay = random.uniform(0.9, 2.5)  # 1秒から2秒の間でランダムにスケジュール
         self.blink_timer = threading.Timer(delay, self.start_blinking)
         self.blink_timer.start()
 
@@ -152,10 +146,10 @@ class CharacterWindow(WindowBase):
             if window.title == "吹き出しウィンドウ":
                 if abs(current_x - expected_x) > 150 or abs(current_y - expected_y) > 150:
                     window.setPos(expected_x, expected_y)
+                    self.lift_windows()
             elif (current_x, current_y) != (expected_x, expected_y):
                 window.setPos(expected_x, expected_y)
-
-        self.lift_windows()
+                self.lift_windows()
 
     def check_transparency(self):
         for window in self.syncronized_windows:
@@ -163,9 +157,6 @@ class CharacterWindow(WindowBase):
                 window.turn_translucent()
 
     def start_blinking(self):
-        print("start_blinking")
-        print(len(self.syncronized_windows))
-        print(len(self.relative_pos))
         self.check_relative_positions()
         self.check_transparency()
 

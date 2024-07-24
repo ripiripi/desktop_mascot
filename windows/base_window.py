@@ -48,9 +48,6 @@ class WindowBase(ABC):
             sub_x, sub_y = int(sub_geom[1]), int(sub_geom[2])
             # 相対位置を計算して保存
             self.relative_pos.append((sub_x - main_x, sub_y - main_y))
-            # ウィンドウがキャラウィンドウなら相対位置を表示
-            if self.window.title() == "キャラウィンドウ":
-                print("relative_pos", sub_x - main_x, sub_y - main_y)
 
     def setup_window(self):
         self.window.bind("<Button-1>", self.mouse_down)

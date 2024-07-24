@@ -8,8 +8,8 @@ from windows.hand_window import HandWindow
 class DesktopMascotApp:
     def __init__(self, root):
         self.root = root
-        self.memo_window = MemoWindow(root, x_pos=420, y_pos=400)
-        self.bubble_window = BubbleWindow(root, x_pos=130, y_pos=250)
+        self.memo_window = MemoWindow(root, x_pos=425, y_pos=400)
+        self.bubble_window = BubbleWindow(root, x_pos=135, y_pos=250)
         char_window_x = 450
         char_window_y = 175
         self.hand_window = HandWindow(root, x_pos=char_window_x, y_pos=char_window_y)
