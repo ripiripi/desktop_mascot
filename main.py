@@ -14,7 +14,10 @@ class DesktopMascotApp:
         char_window_y = 175
         self.hand_window = HandWindow(root, x_pos=char_window_x, y_pos=char_window_y)
         self.char_window = CharacterWindow(
-            root, self.memo_window, self.bubble_window, self.hand_window, x_pos=char_window_x, y_pos=char_window_y
+            root,
+            syncronized_windows=[self.memo_window, self.bubble_window, self.hand_window],
+            x_pos=char_window_x,
+            y_pos=char_window_y,
         )
         self.memo_window.add_syncronized_window([self.hand_window, self.char_window])
         self.hand_window.add_syncronized_window([self.memo_window, self.char_window, self.bubble_window])
