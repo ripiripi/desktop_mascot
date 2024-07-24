@@ -8,22 +8,21 @@ class WindowBase(ABC):
         self.root = root
         self.window = tk.Toplevel(root)
         self.window.geometry(f"{width}x{height}+{x_pos}+{y_pos}")
+        self.title = title
         self.window.title(title)
         self.window.wm_attributes("-topmost", topmost_flag)
         self.window.overrideredirect(True)
-        self.observers = []
-        self.translucent = False
         self.current_alpha = 1.0
-
-        # 位置移動を同期させるウィンドウ
-        self.syncronized_windows: list[WindowBase] = syncronized_windows
-        print(syncronized_windows)
-
+        self.observers = []
+        self.relative_pos = []
+        self.syncronized_windows = []
         self.origin = (0, 0)
-        self.isMouseDown = False
         self.originText = (0, 0)
+        self.isMouseDown = False
         self.isMouseDownText = False
+        self.translucent = False
 
+        self.add_syncronized_window(syncronized_windows)
         self.setup_window()
 
     def add_observer(self, observers: list):
@@ -39,8 +38,16 @@ class WindowBase(ABC):
             self.turn_translucent()
 
     def add_syncronized_window(self, window_list: list):
+        # メインウィンドウの位置を取得
+        main_geom = self.window.geometry().split("+")
+        main_x, main_y = int(main_geom[1]), int(main_geom[2])
         for window in window_list:
             self.syncronized_windows.append(window)
+            # サブウィンドウの位置を取得
+            sub_geom = window.window.geometry().split("+")
+            sub_x, sub_y = int(sub_geom[1]), int(sub_geom[2])
+            # 相対位置を計算して保存
+            self.relative_pos.append((sub_x - main_x, sub_y - main_y))
 
     def setup_window(self):
         self.window.bind("<Button-1>", self.mouse_down)
@@ -50,7 +57,6 @@ class WindowBase(ABC):
         self.window.bind("<B1-Motion>", self.mouse_move)
         self.window.bind("<FocusIn>", self.on_focus_in)
         self.window.bind("<FocusOut>", self.on_focus_out)
-        # ホバーイベントの設定
         self.window.bind("<Enter>", self.on_mouse_enter)
         self.window.bind("<Leave>", self.on_mouse_leave)
 
@@ -86,7 +92,7 @@ class WindowBase(ABC):
         pass
 
     def on_click(self, event):
-        print(f"{self.window.title()} がクリックされました")
+        pass
 
     def mouse_down(self, e):
         if e.num == 1:

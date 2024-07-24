@@ -8,25 +8,21 @@ import time
 
 
 class CharacterWindow(WindowBase):
-    def __init__(self, root, memo_window, bubble_window, hand_window, x_pos, y_pos):
+    def __init__(self, root, syncronized_windows, x_pos, y_pos):
         self.pic_x = 250
         self.pic_y = 1000
         super().__init__(
             root,
             "キャラウィンドウ",
-            self.pic_x,
-            self.pic_y,
-            x_pos,
-            y_pos,
-            syncronized_windows=[
-                memo_window,
-                hand_window,
-                bubble_window,
-            ],
+            width=self.pic_x,
+            height=self.pic_y,
+            x_pos=x_pos,
+            y_pos=y_pos,
+            syncronized_windows=syncronized_windows,
             topmost_flag=True,
         )
 
-        memo_window.window.lift(self.window)
+        syncronized_windows[0].window.lift(self.window)  # memo_window
         self.canvas = tk.Canvas(self.window, width=self.pic_x, height=self.pic_y, highlightthickness=0)
         self.canvas.pack()
 
@@ -75,9 +71,21 @@ class CharacterWindow(WindowBase):
             else:
                 self.canvas.itemconfig(image_id, state="hidden")
 
+    def mouse_down(self, e):
+        self.lift_windows()
+        return super().mouse_down(e)
+
     def on_focus_in(self, event):
-        self.syncronized_windows[1].window.lift(self.window)  # hand
-        self.syncronized_windows[0].window.lift(self.window)  # memo
+        self.lift_windows()
+
+    def lift_windows(self):
+        for window in self.syncronized_windows:
+            if window.title == "メモウィンドウ":
+                memo_window = window
+            if window.title == "ハンドウィンドウ":
+                hand_window = window
+        hand_window.window.lift(self.window)  # hand
+        memo_window.window.lift(self.window)  # memo
 
     def resize_image(self, image, max_width, max_height):
         original_width, original_height = image.size
@@ -100,37 +108,58 @@ class CharacterWindow(WindowBase):
 
         new_data = []
         for item in datas:
-            # 指定した色に近い場合に完全に透明に変換
             if all(abs(item[i] - color[i]) <= tolerance for i in range(3)):
-                new_data.append((255, 255, 255, 0))  # 完全に透明に変換
+                new_data.append((255, 255, 255, 0))
             else:
                 new_data.append(item)
 
         image.putdata(new_data)
 
-        # 半透明部分を完全に透明に変換
         for y in range(image.height):
             for x in range(image.width):
                 r, g, b, a = image.getpixel((x, y))
-                if a != 255:  # 半透明ピクセル
+                if a != 255:
                     image.putpixel((x, y), (r, g, b, 0))
 
         return image
 
     def schedule_blink(self):
-        # まばたきをスケジュール
-        # 値とその対応する確率を定義します
         values = [1, 2, 3, 4, 5]
         probabilities = [0.45, 0.25, 0.2, 0.08, 0.02]
 
-        # ランダムに選択します
         delay = random.choices(values, probabilities)[0]
 
-        # delay = random.uniform(0.9, 2.5)  # 1秒から2秒の間でランダムにスケジュール
         self.blink_timer = threading.Timer(delay, self.start_blinking)
         self.blink_timer.start()
 
+    def check_relative_positions(self):
+        # メインウィンドウの位置を取得
+        main_geom = self.window.geometry().split("+")
+        main_x, main_y = int(main_geom[1]), int(main_geom[2])
+        for index, window in enumerate(self.syncronized_windows):
+            rel_x, rel_y = self.relative_pos[index]
+            expected_x, expected_y = main_x + rel_x, main_y + rel_y
+            # サブウィンドウの現在の位置を取得
+            sub_geom = window.window.geometry().split("+")
+            current_x, current_y = int(sub_geom[1]), int(sub_geom[2])
+            # 吹き出しウィンドウの場合、ある程度の誤差であればそのまま
+            if window.title == "吹き出しウィンドウ":
+                if abs(current_x - expected_x) > 150 or abs(current_y - expected_y) > 150:
+                    window.setPos(expected_x, expected_y)
+                    self.lift_windows()
+            elif (current_x, current_y) != (expected_x, expected_y):
+                window.setPos(expected_x, expected_y)
+                self.lift_windows()
+
+    def check_transparency(self):
+        for window in self.syncronized_windows:
+            if window.translucent != self.translucent:
+                window.turn_translucent()
+
     def start_blinking(self):
+        self.check_relative_positions()
+        self.check_transparency()
+
         self.blink_index = 0
         self.blink_sequence = [0, 1, 2, 1, 0]
         self.blink_time = [0.08, 0.06, 0.05, 0.06, 0.08]
