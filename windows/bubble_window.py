@@ -234,13 +234,15 @@ class BubbleWindow(WindowBase):
             )
             self.like_label_pressed = True
 
-        like_label_y = self.label_height + 20 + self.image_height if self.image_height > 0 else self.label_height + 6
-        self.canvas.create_window(10, like_label_y, anchor="nw", window=self.like_label)
+        like_label_y = (
+            self.label_height + 20 + self.image_height + 1 if self.image_height > 0 else self.label_height + 6
+        )
+        self.canvas.create_window(7, like_label_y, anchor="nw", window=self.like_label)
 
         if self.image_height == 0:
-            self.window_height = 10 + self.label_height + 5 + 15 + 11
+            self.window_height = 10 + self.label_height + 31
         else:
-            self.window_height = 10 + self.label_height + 20 + self.image_height + 5 + 15 + 4
+            self.window_height = 10 + self.label_height + 20 + self.image_height + 26
 
         self.set_balloons()
 
