@@ -24,6 +24,7 @@ class BubbleWindow(WindowBase):
         self.stop_post_update = False
         self.is_sns_mode = True
         self.isLogined = False
+        self.like_button_pressed = False
         self.post_interval = 30
         self.update_sns_timer = threading.Timer(self.post_interval, self.fetch_and_update_sns_posts)
 
@@ -151,9 +152,17 @@ class BubbleWindow(WindowBase):
             print(e)
             self.isLogined = False
 
+    def like_post(self, uri, cid):
+        if not self.like_button_pressed:
+            self.like_label.config(text="♥", fg="#ec4899", font=("San Francisco", 22))
+            self.client.like(uri=uri, cid=cid)
+            self.like_button_pressed = True
+            self.notify_observers(Event.SET_WINDOWPOS)
+
     def update_sns_posts(self):
         if self.is_sns_mode is False or self.stop_post_update or self.isLogined is False:
             return
+        self.like_button_pressed = False
 
         self.canvas.delete("all")
         response = self.client.get_timeline()
@@ -198,15 +207,40 @@ class BubbleWindow(WindowBase):
             self.label_height = self.post_label.winfo_reqheight()
             self.current_text_index = 0
             self.full_text = post_text
-            self.update_text_incrementally()  # 文字を逐次的に表示する
+            self.update_text_incrementally()
         elif self.image is not None:
             self.display_image()
 
-        # バルーンの高さを調整し、再描画
-        if self.image_height == 0:
-            self.window_height = self.label_height + self.image_height + 20  # 画像がある場合はその高さも考慮
+            # 「いいね」ボタンを追加
+        if post.viewer.like is None:
+            self.like_label = tk.Label(
+                self.canvas,
+                text="♡",
+                font=("San Francisco", 22),
+                height=1,
+                fg="lightgray",
+                bg=self.balloon_color,
+                cursor="hand2",
+            )
+            self.like_label.bind("<Button-1>", lambda event: self.like_post(post.uri, post.cid))
         else:
-            self.window_height = self.label_height + self.image_height + 30
+            self.like_label = tk.Label(
+                self.canvas,
+                text="♥",
+                height=1,
+                font=("San Francisco", 22),
+                fg="#ec4899",
+                bg=self.balloon_color,
+            )
+            self.like_label_pressed = True
+
+        like_label_y = self.label_height + 20 + self.image_height if self.image_height > 0 else self.label_height + 6
+        self.canvas.create_window(10, like_label_y, anchor="nw", window=self.like_label)
+
+        if self.image_height == 0:
+            self.window_height = 10 + self.label_height + 5 + 15 + 11
+        else:
+            self.window_height = 10 + self.label_height + 20 + self.image_height + 5 + 15 + 4
 
         self.set_balloons()
 
