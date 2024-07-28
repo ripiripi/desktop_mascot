@@ -101,6 +101,8 @@ class CharacterWindow(WindowBase):
 
     def update(self, event):
         super().update(event)
+        if event == Event.SET_WINDOWPOS:
+            self.check_relative_positions()
 
     def make_background_fully_transparent(self, image, color, tolerance):
         image = image.convert("RGBA")
